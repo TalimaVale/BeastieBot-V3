@@ -8,7 +8,7 @@
     "start": "yarn serve",
     "build": "yarn build-ts",
     "serve": "node dist/index.js",
-    "watch-node": "nodemon --inspect --delay 500 dist/index.js",
+    "watch-node": "nodemon --inspect dist/index.js",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\"  \"yarn watch-ts\" \"yarn watch-node\"",
     "test": "jest --forceExit --coverage --verbose",
     "watch-test": "yarn test -- --watchAll",
@@ -18,7 +18,6 @@
   "dependencies": {
     "dotenv": "^6.1.0",
     "koa": "^2.6.2",
-    "koa-yup-validator": "^1.0.0",
     "yup": "^0.26.6"
   },
   "devDependencies": {
