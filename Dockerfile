@@ -1,8 +1,10 @@
 FROM node:10 AS builder
 WORKDIR /app
 RUN npm install -g yarn
-ADD . /app/
+ADD package.json /app/
+ADD yarn.lock /app/
 RUN yarn install
+ADD . /app/
 RUN yarn build
 
 FROM node:10
