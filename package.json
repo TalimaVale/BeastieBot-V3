@@ -19,11 +19,13 @@
     "dotenv": "^6.2.0",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
-    "yup": "^0.26.10"
+    "yup": "^0.26.10",
+    "koa-router": "^7.4.0"
   },
   "devDependencies": {
     "@types/jest": "^24.0.9",
     "@types/koa-bodyparser": "^4.2.2",
+    "@types/koa-router": "^7.0.40",
     "@types/node": "^11.9.6",
     "@types/yup": "^0.26.10",
     "concurrently": "^4.1.0",
