@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@types/jest": "^24.0.9",
+    "@types/koa-bodyparser": "^4.2.2",
     "@types/node": "^11.9.6",
     "@types/yup": "^0.26.10",
     "concurrently": "^4.1.0",
