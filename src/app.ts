@@ -1,3 +1,4 @@
+require("source-map-support").install();
 import Koa = require("koa");
 import routes from "./endpoints/routes";
 

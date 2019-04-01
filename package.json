@@ -21,6 +21,7 @@
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
     "koa-router": "^7.4.0",
+    "source-map-support": "^0.5.11",
     "yup": "^0.26.10"
   },
   "devDependencies": {
@@ -40,8 +41,8 @@
     "prettier": "^1.16.4",
     "pretty-quick": "^1.10.0",
     "supertest": "^3.4.2",
+    "supertest-koa-agent": "^0.3.2",
     "ts-jest": "^24.0.0",
-    "typescript": "^3.3.3333",
-    "supertest-koa-agent": "^0.3.2"
+    "typescript": "^3.3.3333"
   }
 }
