@@ -1,4 +1,4 @@
-FROM node:10 AS builder
+FROM node:12 AS builder
 WORKDIR /app
 RUN npm install -g yarn
 ADD package.json /app/
@@ -7,7 +7,7 @@ RUN yarn install
 ADD . /app/
 RUN yarn build
 
-FROM node:10
+FROM node:12
 ENV NODE_ENV=production
 WORKDIR /app
 ADD package.json /app/
