@@ -1,4 +1,4 @@
-# Node TypeScript Koa Starter
+# Node TypeScript Koa Starter [![CircleCI](https://circleci.com/gh/Turee/node-typescript-koa-starter.svg?style=svg)](https://circleci.com/gh/Turee/node-typescript-koa-starter)
 
 Bare minimum for getting started with Koa + TypeScript.
 
