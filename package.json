@@ -11,6 +11,7 @@
     "watch-node": "nodemon --inspect dist/index.js",
     "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\"  \"yarn watch-ts\" \"yarn watch-node\"",
     "test": "jest --coverage --verbose",
+    "test:ci": "JEST_JUNIT_OUTPUT='reports/junit/js-test-results.xml' jest --ci --coverage --verbose --reporters=default --reporters=jest-junit",
     "watch-test": "yarn test -- --watchAll",
     "build-ts": "tsc",
     "watch-ts": "tsc -w"
