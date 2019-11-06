@@ -1,13 +1,9 @@
 require("source-map-support").install();
 require("dotenv").config();
-import app from "./app";
-import config from "./config";
+import Beastie from "./beastie";
 
-// @ts-ignore
-app.listen(config.PORT, err => {
-  if (err) {
-    console.error("Could not start listening on port", config.PORT, err);
-  } else {
-    console.log("Listening on port", config.PORT);
-  }
+const beastie = new Beastie();
+
+beastie.start().then(() => {
+  console.log("Beastie is alive! RAWR");
 });
