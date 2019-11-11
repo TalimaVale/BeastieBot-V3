@@ -1,5 +1,4 @@
-import config from "../config";
-import db from "../db";
+import config from "../../config";
 
 export const createTeammateTable = db => {
   const tableParams = {

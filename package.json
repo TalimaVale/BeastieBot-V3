@@ -19,6 +19,7 @@
   "dependencies": {
     "aws-sdk": "^2.562.0",
     "bluebird": "^3.5.5",
+    "discord.js": "^11.5.1",
     "dotenv": "^8.0.0",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",

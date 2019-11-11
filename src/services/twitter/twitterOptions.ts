@@ -1,4 +1,4 @@
-import config from "../config";
+import config from "../../config";
 
 const twitterOptions = {
   consumer_key: config.TWITTER_CONSUMER_KEY,

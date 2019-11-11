@@ -1,6 +1,6 @@
-import config from "../config";
+import config from "../../config";
 
-const beastieOptions = {
+const twitchOptions = {
   options: {
     clientId: config.CLIENT_ID,
     debug: true
@@ -15,4 +15,4 @@ const beastieOptions = {
   channels: [config.BROADCASTER_USERNAME]
 };
 
-export default beastieOptions;
+export default twitchOptions;

@@ -1,167 +1,144 @@
 import tmi from "tmi.js";
 import Twitter from "twitter";
+import Discord from "discord.js";
 import config from "../config";
-import beastieOptions from "./beastieOptions";
-import Webhooks from "../webhooks";
-import twitterOptions from "../twitter/twitterOptions";
+import TwitchWebhooksServer from "../services/twitchWebhooks";
+import BeastieTwitterClient from "../services/twitter";
 import { getBroadcasterId } from "../utils";
-import { determineBeastieResponse } from "./events/message";
-import handleFollow from "../webhooks/events/follow";
-import handleStreamChange from "../webhooks/events/streamChange";
-import handleSubscribe from "../webhooks/events/subscribe";
-import { updateChattersAwesomeness, isStreaming } from "../utils";
-import {
-  awesomenessInterval,
-  awesomenessIntervalAmount,
-  discordInterval
-} from "../utils/values";
+import { initStream } from "../utils";
+import handleStreamChange from "../services/twitchWebhooks/streamChange";
+import BeastieTwitchClient from "../services/twitch";
+import { POST_EVENT } from "../utils/values";
+import BeastieDiscordClient from "../services/discord";
 
 interface StateType {
   isStreaming: boolean;
+  curStreamId: number;
 }
 
 export default class BeastieBot {
-  webhooks: Webhooks;
-  tmiClient: tmi.Client;
-  twitterClient: Twitter;
-  // discord client with type
-  broadcasterUsername: string;
-  broadcasterId: number;
-
   state: StateType;
 
-  awesomenessInterval: NodeJS.Timeout;
-  awesomenessIntervalAmount: number;
+  twitchClient: BeastieTwitchClient;
+  twitchWebhooks: TwitchWebhooksServer;
+  discordClient: BeastieDiscordClient;
+  twitterClient: BeastieTwitterClient;
 
-  discordInterval: NodeJS.Timeout;
+  broadcasterId: number;
 
-  initTmi() {
-    const tmiClient = new tmi.Client(beastieOptions);
+  private constructor() {}
 
-    tmiClient.on("message", (channel, tags, message, self) => {
-      if (!self) this.onMessage(tags, message);
-    });
+  public static async create() {
+    const beastie = new BeastieBot();
 
-    tmiClient.on("connected", () => {
-      this.onConnect();
-    });
-
-    tmiClient.on("disconnected", () => {
-      console.log("BEASTIE HAS BEEN DISCONNECTED");
-      this.onDisconnect();
-    });
-
-    process.on("SIGINT", () => {
-      console.log("SHUTTING DOWN ON SIGINT");
-      this.onDisconnect();
-    });
-
-    return tmiClient;
-  }
-
-  constructor() {
-    this.state = {
-      isStreaming: false
+    beastie.state = {
+      isStreaming: false,
+      curStreamId: 0
     };
 
-    this.awesomenessIntervalAmount = awesomenessIntervalAmount;
+    beastie.twitchClient = beastie.initTwitch();
+    beastie.broadcasterId = await getBroadcasterId();
+    beastie.twitchWebhooks = beastie.initTwitchWebhooks();
+    beastie.discordClient = beastie.initDiscord();
+    beastie.twitterClient = beastie.initTwitter();
 
-    this.tmiClient = this.initTmi();
-    console.log("tmi init finished");
+    beastie.state = await beastie.initState();
+
+    console.log("init finished");
+    return beastie;
   }
 
-  initWebhooks() {
-    const webhooks = new Webhooks();
-    webhooks.connect(this.broadcasterId);
-    webhooks.on("stream", this.onStream.bind(this));
-    webhooks.on("follow", this.onFollow.bind(this));
-    //webhooks.on('subscribe', this.onSubscribe.bind(this))
+  initTwitch() {
+    const twitchClient = new BeastieTwitchClient();
+
+    // Twitch Event Listeners that affect other services
+
+    console.log("twitch init finished");
+    return twitchClient;
+  }
+
+  initTwitchWebhooks() {
+    const twitchWebhooks = new TwitchWebhooksServer();
+    console.log(this.broadcasterId);
+    twitchWebhooks.connect(this.broadcasterId);
+
+    // Twitch Webhooks Event Listeners that affect other services
+    twitchWebhooks.server.on("streams", payload => {
+      this.onStreamChange(payload);
+    });
+
+    twitchWebhooks.server.on("users/follows", payload => {
+      this.onFollow(payload);
+    });
+    twitchWebhooks.server.on("subscriptions/events", payload => {
+      this.onSubscribe(payload);
+    });
 
     console.log("webhooks init finished");
-    return webhooks;
+    return twitchWebhooks;
   }
 
   initTwitter() {
-    const twitterClient = new Twitter(twitterOptions);
+    const twitterClient = new BeastieTwitterClient();
+
+    // Twitter Event Listeners that affect other services
 
     console.log("twitter init finished");
     return twitterClient;
   }
 
+  initDiscord() {
+    const discordClient = new BeastieDiscordClient();
+
+    console.log(`discord init finished`);
+    return discordClient;
+  }
+
   initState = async () => {
-    const isLive = await isStreaming();
+    const stream = await initStream();
 
     console.log("state init finished");
     return {
       ...this.state,
-      isStreaming: isLive
+      isStreaming: stream.live,
+      curStream: stream.id
     };
   };
 
-  private async initBeastieBot() {
-    this.broadcasterId = await getBroadcasterId(config.BROADCASTER_USERNAME);
-
-    this.webhooks = this.initWebhooks();
-    this.twitterClient = this.initTwitter();
-    // init discord client
-
-    this.state = await this.initState();
-    console.log(this.state);
-
-    console.log("init finished");
-  }
-
   public async start() {
-    await this.initBeastieBot();
-    await this.tmiClient.connect();
-    this.toggleStreamIntervals(this.state.isStreaming);
+    await this.twitchClient.client.connect();
+    await this.discordClient.client.login(config.DISCORD_TOKEN);
+    this.twitchClient.toggleStreamIntervals(this.state.isStreaming);
   }
 
-  private say(msg) {
-    this.tmiClient.say(config.BROADCASTER_USERNAME, msg);
-  }
+  private onStreamChange(payload) {
+    const stream = payload.data[0];
+    const response = handleStreamChange(stream, this.state.curStreamId);
 
-  private onMessage(tags, message) {
-    const response = determineBeastieResponse(tags, message);
-    if (response) this.say(response);
-  }
-  private onConnect() {
-    this.say(`Hello team! I have awoken :D rawr`);
-  }
-  private onDisconnect() {
-    this.say(`Goodbye team :) rawr`);
-  }
-  private onStream(payload) {
-    const response = handleStreamChange(payload);
-    // clear or start beastie streamIntervals based on the payload
-    this.toggleStreamIntervals(this.state.isStreaming);
-    // this.say(response) say something based on the payload
-  }
-  private onFollow(payload) {
-    const response = handleFollow(payload);
-    this.say(response);
-  }
-  private onSubscribe(payload) {
-    const response = handleSubscribe(payload);
-    this.say(response);
-  }
+    this.state.isStreaming = response.live;
+    this.state.curStreamId = response.streamId;
 
-  private toggleStreamIntervals(live) {
-    if (live) {
-      console.log("We are LIVE!");
-
-      this.awesomenessInterval = setInterval(async () => {
-        updateChattersAwesomeness(this.awesomenessIntervalAmount);
-      }, awesomenessInterval);
-
-      this.discordInterval = setInterval(async () => {
-        console.log(
-          "DISCORD LINK: posted server link with short pitch of community!"
-        );
-      }, discordInterval);
-    } else {
-      clearInterval(this.awesomenessInterval);
-      clearInterval(this.discordInterval);
+    if (response.newStream) {
+      this.twitterClient.post(POST_EVENT.LIVE, this.state.curStreamId);
+      this.discordClient.post(POST_EVENT.LIVE);
+    } else if (!this.state.isStreaming) {
+      // post to twitch 'Goodbye, thanks for watching'
     }
+    // handle title change
+    // handle game_id change
+
+    this.twitchClient.toggleStreamIntervals(this.state.isStreaming);
+  }
+
+  private onFollow(payload) {
+    const { from_name } = payload.event.data[0];
+    this.twitchClient.post(POST_EVENT.TWITCH_NEW_FOLLOW, from_name);
+    // twitter and discord post for follow milestones per stream
+  }
+
+  private onSubscribe(payload) {
+    const { user_name } = payload.event.data[0].event_data;
+    this.twitchClient.post(POST_EVENT.TWITCH_NEW_SUB, user_name);
+    // twitter and discord post for subscriber milestones per stream
   }
 }
