@@ -1,3 +1,5 @@
+import config from "../config";
+
 // Beastie Faces (Emotes)
 export const beastieFaceEmotes = [
   "OhMyDog",
@@ -54,7 +56,7 @@ export const endRaidMessage = `The raid is over! Great raid team, and thanks for
 
 // Discord Guild and Channel Names {
 export const discordGuild = {
-  guildName: "teamTALIMA",
+  guildName: config.DISCORD_GUILD_NAME || "teamTALIMA",
   welcomeCh: "general",
   announcementsCh: "announcements"
 };
