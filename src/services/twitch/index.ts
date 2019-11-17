@@ -59,8 +59,8 @@ export default class BeastieTwitchService {
       this.onConnect();
     });
 
-    this.client.on("disconnected", () => {
-      console.log("BEASTIE HAS BEEN DISCONNECTED FROM TWITCH");
+    this.client.on("disconnected", (reason = "no reason given") => {
+      console.log("BEASTIE HAS BEEN DISCONNECTED FROM TWITCH", { reason });
       this.onDisconnect();
     });
 
@@ -110,8 +110,8 @@ export default class BeastieTwitchService {
     this.say(beastieDisconnectMessage);
   };
 
-  private onMessage = (channel, tags, message) => {
-    const response = determineBeastieResponse(this, tags, message);
+  private onMessage = async (channel, tags, message) => {
+    const response = await determineBeastieResponse(this, tags, message);
 
     if (this.activeRaid && this.hostedChannel !== "")
       checkForRaidMessage(this, channel, tags, message);
