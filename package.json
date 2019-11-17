@@ -28,6 +28,7 @@
     "request-promise": "^4.2.4",
     "socket.io": "^2.3.0",
     "source-map-support": "^0.5.12",
+    "spotify-web-api-node": "^4.0.0",
     "tmi.js": "^1.5.0",
     "twitch-webhook": "^1.2.4",
     "twitter": "^1.7.1",
