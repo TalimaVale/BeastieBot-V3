@@ -27,7 +27,10 @@ const renewSpotifyAccessToken = async () => {
     });
     throw error;
   } finally {
-    setTimeout(renewSpotifyAccessToken, renewalTime - 60);
+    setTimeout(
+      renewSpotifyAccessToken,
+      Math.max((renewalTime - 60) * 1000, 20 * 1000)
+    );
   }
 };
 renewSpotifyAccessToken();
@@ -47,6 +50,7 @@ const findSong = async songName => {
     if (song === undefined) return null;
 
     return {
+      songId: song.id,
       songName: song.name,
       artistName: (song.artists.find(artist => !!artist) || {}).name
     };
@@ -70,14 +74,13 @@ const rewards = new Map([
       } else if (song === null) {
         return `@${
           tags.username
-        } Sorry, that song couldn't be found. Maybe try again?`;
-      } else {
-        return `@${tags.username} ("${song.songName}" by ${
-          song.artistName
-        }) will be added to a request queue. Thank you for the song request!`;
+        } Sorry, that song couldn't be found. Maybe try again with some adjustments?`;
       }
 
-      return `song requested ${JSON.stringify(songName)}`;
+      return `@${tags.username} ("${song.songName}" by ${
+        song.artistName
+      }) will be added to a request queue. Thank you for the song request!`;
+      // TODO actually add the song request to the queue!
     }
   ],
   [
@@ -88,12 +91,13 @@ const rewards = new Map([
 
       const song = await findSong(songName).catch(() => undefined);
       if (song === undefined) {
-        return `lookup failed. :(`;
-      } else {
-        return `lookup succeeded OhMyDog`;
+        return `Sorry, song lookup failed. :(`;
+      } else if (song === null) {
+        return `@${
+          tags.username
+        } Sorry, that song couldn't be found. Maybe try again with some adjustments?`;
       }
-
-      return `song play requested ${JSON.stringify(songName)}`;
+      return `Song found within Spotify! OhMyDog But this feature isn't implemented yet! Thank you and please check back again later!`;
     }
   ],
   [
