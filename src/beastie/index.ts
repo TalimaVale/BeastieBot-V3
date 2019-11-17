@@ -7,6 +7,7 @@ import BeastieTwitterClient from "../services/twitter";
 import { getBroadcasterId } from "../utils";
 import { initStream } from "../utils";
 import handleStreamChange from "../services/twitchWebhooks/streamChange";
+import StreamOverlayServer from "./streamOverlay";
 import BeastieTwitchClient from "../services/twitch";
 import { POST_EVENT } from "../utils/values";
 import BeastieDiscordClient from "../services/discord";
@@ -21,6 +22,7 @@ export default class BeastieBot {
 
   twitchClient: BeastieTwitchClient;
   twitchWebhooks: TwitchWebhooksServer;
+  streamOverlay: StreamOverlayServer;
   discordClient: BeastieDiscordClient;
   twitterClient: BeastieTwitterClient;
 
@@ -43,6 +45,7 @@ export default class BeastieBot {
     beastie.twitterClient = beastie.initTwitter();
 
     beastie.state = await beastie.initState();
+    beastie.streamOverlay = await beastie.initStreamOverlay();
 
     console.log("init finished");
     return beastie;
@@ -76,6 +79,15 @@ export default class BeastieBot {
 
     console.log("webhooks init finished");
     return twitchWebhooks;
+  }
+
+  initStreamOverlay() {
+    const streamOverlay = new StreamOverlayServer();
+
+    // Twitch Overlay Event Listeners that affect other services
+
+    console.log("overlay init finished");
+    return streamOverlay;
   }
 
   initTwitter() {
@@ -134,6 +146,10 @@ export default class BeastieBot {
     const { from_name } = payload.event.data[0];
     this.twitchClient.post(POST_EVENT.TWITCH_NEW_FOLLOW, from_name);
     // twitter and discord post for follow milestones per stream
+
+    // EMIT FOLLOW EVENT TO OVERLAY/CLIENT/FRONT END
+
+    this.streamOverlay.io.sockets.emit("newFollower", from_name);
   }
 
   private onSubscribe(payload) {

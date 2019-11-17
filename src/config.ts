@@ -2,6 +2,8 @@ import * as yup from "yup";
 
 interface Config {
   PORT: number;
+  TWITCH_WEBHOOKS_SERVER_PORT: number;
+  STREAM_OVERLAY_SERVER_PORT: number;
   CLIENT_ID: string;
   CLIENT_SECRET: string;
   BEASTIE_USERNAME: string;
@@ -20,6 +22,14 @@ interface Config {
 
 const config = yup.object().shape({
   PORT: yup
+    .number()
+    .integer()
+    .required(),
+  TWITCH_WEBHOOKS_SERVER_PORT: yup
+    .number()
+    .integer()
+    .required(),
+  STREAM_OVERLAY_SERVER_PORT: yup
     .number()
     .integer()
     .required(),
