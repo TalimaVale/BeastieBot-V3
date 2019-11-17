@@ -1,11 +1,13 @@
 import { greetings, sayBeastieGreeting } from "./greetings";
 import { startRaidTeam, joinRaidTeam } from "../../../beastie/raid";
+import redeemReward, { aliases as redeemAliases } from "../commands/redeem";
 
 const COMMANDS = {
   GREETING: "greeting",
   START_RAID: "startraid",
   JOIN_RAID: "joinraid",
-  POST_TO_TWITTER: "twitterpost"
+  POST_TO_TWITTER: "twitterpost",
+  REDEEM_REWARD: "redeem"
 };
 
 const determineMessageType = (rawMessage: string) => {
@@ -14,9 +16,18 @@ const determineMessageType = (rawMessage: string) => {
   if (message === COMMANDS.START_RAID) return COMMANDS.START_RAID;
   if (message === COMMANDS.JOIN_RAID) return COMMANDS.JOIN_RAID;
   if (message === COMMANDS.POST_TO_TWITTER) return COMMANDS.POST_TO_TWITTER;
+  if (
+    message.startsWith(COMMANDS.REDEEM_REWARD + " ") ||
+    message === COMMANDS.REDEEM_REWARD ||
+    redeemAliases.some(
+      redeemAlias =>
+        message.startsWith(redeemAlias + " ") || message === redeemAlias
+    )
+  )
+    return COMMANDS.REDEEM_REWARD;
 };
 
-export const determineBeastieResponse = (beastie, tags, message) => {
+export const determineBeastieResponse = async (beastie, tags, message) => {
   const messageType = determineMessageType(message);
 
   switch (messageType) {
@@ -29,6 +40,8 @@ export const determineBeastieResponse = (beastie, tags, message) => {
     case COMMANDS.POST_TO_TWITTER:
       console.log(`post 'command message' to twitter`);
       return;
+    case COMMANDS.REDEEM_REWARD:
+      return redeemReward({ tags, message });
     default:
       return;
   }

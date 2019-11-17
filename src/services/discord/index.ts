@@ -38,9 +38,10 @@ export default class BeastieDiscordClient {
   private say = (channel, msg) => {
     if (Array.isArray(msg))
       msg.forEach(m => {
-        this.client.channels.get(channel).send(m, {});
+        (this.client.channels.get(channel) as Discord.TextChannel).send(m, {});
       });
-    else this.client.channels.get(channel).send(msg, {});
+    else
+      (this.client.channels.get(channel) as Discord.TextChannel).send(msg, {});
   };
 
   private discordChannels = event => {
