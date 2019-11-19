@@ -70,6 +70,10 @@ export default class BeastieTwitchService {
     });
   }
 
+  public connect() {
+    return this.client.connect();
+  }
+
   // BeastieTwitchClient Actions
   private say = msg => {
     if (Array.isArray(msg))
@@ -85,7 +89,7 @@ export default class BeastieTwitchService {
   };
 
   public toggleStreamIntervals = live => {
-    if (live) {
+    if (true) {
       console.log("intervals running");
       if (this.awesomenessInterval === undefined)
         this.awesomenessInterval = setInterval(async () => {

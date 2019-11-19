@@ -62,7 +62,6 @@ export default class BeastieBot {
 
   initTwitchWebhooks() {
     const twitchWebhooks = new TwitchWebhooksServer();
-    console.log(this.broadcasterId);
     twitchWebhooks.connect(this.broadcasterId);
 
     // Twitch Webhooks Event Listeners that affect other services
@@ -118,8 +117,8 @@ export default class BeastieBot {
   };
 
   public async start() {
-    await this.twitchClient.client.connect();
-    await this.discordClient.client.login(config.DISCORD_TOKEN);
+    await this.twitchClient.connect();
+    await this.discordClient.login(config.DISCORD_TOKEN);
     this.twitchClient.toggleStreamIntervals(this.state.isStreaming);
   }
 

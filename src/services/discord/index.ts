@@ -4,7 +4,7 @@ import discordPosts from "./discordPosts";
 import { POST_EVENT, beastieDisconnectMessage } from "../../utils/values";
 
 export default class BeastieDiscordClient {
-  client: Discord.Client;
+  private client: Discord.Client;
 
   discordGuildId: string;
 
@@ -32,6 +32,10 @@ export default class BeastieDiscordClient {
       console.log("SHUTTING DOWN ON SIGINT");
       this.onDisconnect();
     });
+  }
+
+  public login(token) {
+    return this.client.login(token);
   }
 
   // BeastieDiscordClient Actions
