@@ -1,10 +1,13 @@
-import { getBroadcasterDisplayName } from "../../utils";
+import { getDisplayName } from "../../utils";
 import { POST_EVENT } from "../../utils/values";
+import config from "../../config";
 
 const twitterPosts = async (event, streamId) => {
   switch (event) {
     case POST_EVENT.LIVE:
-      const broadcasterDisplayName = await getBroadcasterDisplayName();
+      const broadcasterDisplayName = await getDisplayName(
+        config.BROADCASTER_USERNAME
+      );
       return postLive(broadcasterDisplayName, streamId);
     default:
       return;

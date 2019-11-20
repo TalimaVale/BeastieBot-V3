@@ -1,5 +1,6 @@
 import { beastieFaceEmotes } from "../../../utils/values";
 import { isBroadcaster } from "../../../utils";
+import { BADGES } from ".";
 
 export const greetings = new Set([
   `hello`,
@@ -16,14 +17,18 @@ export const greetings = new Set([
   `hi ttsbeastie`
 ]);
 
-export const sayBeastieGreeting = (tags, message) => {
+export const sayBeastieGreeting = (tags, badge, command) => {
   let beastieGreeting = "Hello";
-  if (message.toLowerCase().substring(1, 3) === "hi") beastieGreeting = "Hi";
-  else if (message.toLowerCase().substring(1, 4) === "hey")
-    beastieGreeting = "Hey";
+  if (command.substring(0, 2) === "hi") beastieGreeting = "Hi";
+  else if (command.substring(0, 3) === "hey") beastieGreeting = "Hey";
 
   const beastieEmote = isBroadcaster(tags.username)
     ? "OhMyDog"
     : beastieFaceEmotes[Math.floor(Math.random() * beastieFaceEmotes.length)];
-  return `${beastieGreeting} ${tags["display-name"]}! ${beastieEmote}`;
+
+  if (badge === BADGES.STAFF)
+    return `${beastieGreeting} ${
+      tags["display-name"]
+    }! ${beastieEmote} It's awesome to have official Twitch people in our chatroom! Welcome to the team stream! rawr`;
+  else return `${beastieGreeting} ${tags["display-name"]}! ${beastieEmote}`;
 };

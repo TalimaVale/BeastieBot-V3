@@ -1,12 +1,15 @@
 import { POST_EVENT } from "../../utils/values";
-import { getBroadcasterDisplayName } from "../../utils";
+import { getDisplayName } from "../../utils";
+import config from "../../config";
 
 const discordPosts = async (event, memberUser = "") => {
   switch (event) {
     case POST_EVENT.DISCORD_MEMBER_ADD:
       return postGuildMemberAdd(memberUser);
     case POST_EVENT.LIVE:
-      const broadcasterDisplayName = await getBroadcasterDisplayName();
+      const broadcasterDisplayName = await getDisplayName(
+        config.BROADCASTER_USERNAME
+      );
       return postLive(broadcasterDisplayName);
     default:
       return;

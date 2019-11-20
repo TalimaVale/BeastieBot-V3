@@ -17,6 +17,7 @@
     "watch-ts": "tsc -w"
   },
   "dependencies": {
+    "@types/socket.io": "^2.1.4",
     "aws-sdk": "^2.562.0",
     "bluebird": "^3.5.5",
     "discord.js": "^11.5.1",

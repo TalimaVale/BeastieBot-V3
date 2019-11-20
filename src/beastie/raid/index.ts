@@ -1,12 +1,13 @@
 /*
-Encourage team to participate
-Reward awesomeness per teammate that raids
+BeastieBot, Twitch Community Activity
 
-onMessage !startraid - enable ActiveRaid, listen for !joinraid, post start message, post raid message
-onMessage !joinraid - add message sender to RaidTeam[], whisper message sender
-on /host username - if ActiveRaid, start raid timer, then post link to username's channel, post raid message, join username's channel, post hello message, listen to username's channel messages
-username onMessage - if message equals raid message, then if message sender is on RaidTeam[], then increment RaidTeamReward, Remove message sender from RaidTeam[]
-raid timer ends - post goodbye message, leave username channel, reward chatters RaidTeamReward awesomeness, empty RaidTeam[], set RaidTeamReward to 0, disable ActiveRaid
+Raid another streamer's chatroom and post the raid message. Broadcaster's chatroom chatters receive awesomeness points equal to the amount of raid messages posted.
+RULES: 1) Raid message must be posted by raidTeam member, 2) One raid message per raidTeam member counted.
+
+!startraid - broadcaster activates raid and enables !joinraid command
+!joinraid - adds user to raidTeam and whispers user to confirm
+raidTeam: Array<string> - TwitchClient property
+raidMessage: string - TwitchClient property
 */
 
 import {
@@ -22,7 +23,9 @@ import {
 
 export const startRaidTeam = twitchService => {
   twitchService.activeRaid = true;
-  const startMsg = startRaidMessage;
+  const startMsg = `${startRaidMessage} Current raid team: ${
+    twitchService.raidTeam.length
+  }`;
   const raidMsg = raidMessage;
   return [startMsg, raidMsg];
 };
@@ -42,11 +45,16 @@ const joinHostedChannel = (client, target, viewers) => {
   client.say(target, msg);
 };
 
-export const startRaiding = (twitchService, target, viewers) => {
+export const startRaiding = (
+  twitchService,
+  target,
+  targetDisplayName,
+  viewers
+) => {
   joinHostedChannel(twitchService.client, target, viewers);
   twitchService.hostedChannel = target;
 
-  const startMsg = activeRaidMessage(target);
+  const startMsg = activeRaidMessage(targetDisplayName);
   const raidMsg = raidMessage;
 
   return [startMsg, raidMsg];

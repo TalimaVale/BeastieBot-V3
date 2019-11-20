@@ -1,11 +1,9 @@
 import rp from "request-promise";
 import config from "../config";
 
-export const getBroadcasterStream = async () => {
+export const getStream = async username => {
   const stream = await rp({
-    uri: `https://api.twitch.tv/helix/streams?first=1&user_id=${
-      config.BROADCASTER_USERNAME
-    }`,
+    uri: `https://api.twitch.tv/helix/streams?first=1&user_id=${username}`,
     headers: {
       "Client-ID": config.CLIENT_ID
     },
@@ -14,10 +12,10 @@ export const getBroadcasterStream = async () => {
   return stream;
 };
 
-export const getBroadcaster = async () => {
+export const getUser = async username => {
   const userArray = await rp({
     uri: "https://api.twitch.tv/helix/users",
-    qs: { login: config.BROADCASTER_USERNAME },
+    qs: { login: username },
     headers: {
       "Client-ID": `${config.CLIENT_ID}`
     },

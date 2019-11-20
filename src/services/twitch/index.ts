@@ -16,7 +16,7 @@ import {
   raidMessage,
   POST_EVENT
 } from "../../utils/values";
-import { updateChattersAwesomeness } from "../../utils";
+import { getDisplayName, updateChattersAwesomeness } from "../../utils";
 import twitchPosts from "./twitchPosts";
 
 export default class BeastieTwitchService {
@@ -48,7 +48,8 @@ export default class BeastieTwitchService {
 
     // Event Listeners
     this.client.on("message", (channel, tags, message, self) => {
-      if (!self) this.onMessage(channel, tags, message);
+      if (!self && message.substr(0, 6) !== "!bonus")
+        this.onMessage(channel, tags, message);
     });
 
     this.client.on("hosting", (channel, target, viewers) => {
@@ -125,7 +126,13 @@ export default class BeastieTwitchService {
 
   private onHosting = async (target, viewers) => {
     if (this.activeRaid) {
-      const startResponse = startRaiding(this, target, viewers);
+      const targetDisplayName = await getDisplayName(target);
+      const startResponse = startRaiding(
+        this,
+        target,
+        targetDisplayName,
+        viewers
+      );
       this.say(startResponse);
 
       // TODO: UnhandledPromiseRejectionWarning
@@ -138,6 +145,7 @@ export default class BeastieTwitchService {
           }
         }, raidTimer);
       });
+
       this.activeRaid = endResponse.activeRaid;
       this.raidTeam = endResponse.raidTeam;
       this.raidReward = endResponse.raidReward;

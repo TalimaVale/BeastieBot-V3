@@ -1,10 +1,7 @@
-import tmi from "tmi.js";
-import Twitter from "twitter";
-import Discord from "discord.js";
 import config from "../config";
 import TwitchWebhooksServer from "../services/twitchWebhooks";
 import BeastieTwitterClient from "../services/twitter";
-import { getBroadcasterId } from "../utils";
+import { getId } from "../utils";
 import { initStream } from "../utils";
 import handleStreamChange from "../services/twitchWebhooks/streamChange";
 import StreamOverlayServer from "./streamOverlay";
@@ -39,7 +36,7 @@ export default class BeastieBot {
     };
 
     beastie.twitchClient = beastie.initTwitch();
-    beastie.broadcasterId = await getBroadcasterId();
+    beastie.broadcasterId = await getId(config.BROADCASTER_USERNAME);
     beastie.twitchWebhooks = beastie.initTwitchWebhooks();
     beastie.discordClient = beastie.initDiscord();
     beastie.twitterClient = beastie.initTwitter();
@@ -148,7 +145,7 @@ export default class BeastieBot {
 
     // EMIT FOLLOW EVENT TO OVERLAY/CLIENT/FRONT END
 
-    this.streamOverlay.io.sockets.emit("newFollower", from_name);
+    this.streamOverlay.io.emit("newFollower", from_name);
   }
 
   private onSubscribe(payload) {

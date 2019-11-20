@@ -20,7 +20,7 @@ export default class BeastieTwitterClient {
         const { created_at, id, text, entities, user } = tweet;
         const { id: userId, screen_name } = user;
         console.log(
-          JSON.stringify(
+          `Beastie tweeted! ${JSON.stringify(
             {
               created_at,
               id,
@@ -30,7 +30,7 @@ export default class BeastieTwitterClient {
             },
             null,
             2
-          )
+          )}`
         );
       }
     );

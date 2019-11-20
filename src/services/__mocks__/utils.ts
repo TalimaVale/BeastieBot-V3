@@ -1,5 +1,5 @@
-export const getBroadcasterStream = async () => {
-  console.log("UTILS MOCK - getBroadcasterStream()");
+export const getStream = async () => {
+  console.log("UTILS MOCK - getStream()");
   return {
     data: [
       {
@@ -10,8 +10,8 @@ export const getBroadcasterStream = async () => {
   };
 };
 
-export const getBroadcaster = async () => {
-  console.log("UTILS MOCK - getBroadcaster()");
+export const getUser = async () => {
+  console.log("UTILS MOCK - getUser()");
   return {
     data: [
       {

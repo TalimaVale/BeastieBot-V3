@@ -34,7 +34,7 @@ export enum POST_EVENT {
 }
 
 // Twitch Intervals Feature
-export const awesomenessInterval = 1000 * 5; // add 60 when not testing
+export const awesomenessInterval = 1000 * 5 * 60; // add 60 when not testing
 export const awesomenessIntervalAmount = 1;
 
 export const discordInterval = 1000 * 60 * 30;
