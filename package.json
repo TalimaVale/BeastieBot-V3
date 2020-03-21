@@ -1,66 +1,60 @@
 {
-  "name": "beastiebot",
-  "version": "1.0.2",
-  "description": "teamTALIMA's personal BeastieBot, trained to watch over Twitch chatrooms and Discord servers",
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
+  },
   "scripts": {
-    "start": "node ./src/monitor",
-    "stop": "node ./src/cli.js stop",
-    "restart": "node ./src/cli.js restart"
-  },
-  "keywords": [
-    "twitch",
-    "irc bot",
-    "discord bot",
-    "teamTALIMA",
-    "beastie",
-    "beastiebot"
-  ],
-  "homepage": "https://github.com/teamTALIMA/BeastieBot",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/teamTALIMA/BeastieBot.git"
-  },
-  "bugs": {
-    "url": "https://github.com/teamTALIMA/BeastieBot/issues",
-    "email": "teamTALIMA@gmail.com"
-  },
-  "license": "GPL-3.0",
-  "author": "Talima Vale <teamTALIMA@gmail.com> (https://www.twitch.tv/teamTALIMA)",
-  "contributors": [
-    "Scryptonite <scryptonite.mail@gmail.com>"
-  ],
-  "main": "./src/cli.js",
-  "preferGlobal": true,
-  "bin": {
-    "beastie": "./src/cli.js"
+    "start": "yarn serve",
+    "build": "yarn build-ts",
+    "serve": "node dist/index.js",
+    "watch-node": "nodemon --inspect dist/index.js",
+    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\"  \"yarn watch-ts\" \"yarn watch-node\"",
+    "test": "jest --coverage --verbose",
+    "test:ci": "JEST_JUNIT_OUTPUT='reports/junit/js-test-results.xml' jest --ci --coverage --verbose --reporters=default --reporters=jest-junit",
+    "watch-test": "yarn test -- --watchAll",
+    "build-ts": "tsc",
+    "watch-ts": "tsc -w"
   },
   "dependencies": {
-    "body-parser": "^1.17.2",
-    "chalk": "^1.1.3",
-    "commander": "^2.10.0",
-    "csv": "^1.1.1",
-    "discord.io": "https://github.com/woor/discord.io/tarball/gateway_v6",
-    "feathers": "^2.1.4",
-    "feathers-authentication": "^1.2.6",
-    "feathers-authentication-jwt": "^0.3.1",
-    "feathers-authentication-local": "^0.4.3",
-    "feathers-errors": "^2.8.1",
-    "feathers-hooks": "^2.0.1",
-    "feathers-memory": "^1.1.0",
-    "feathers-rest": "^1.7.4",
-    "feathers-socketio": "^2.0.0",
-    "forever-monitor": "^1.7.1",
-    "ini": "^1.3.4",
-    "inquirer": "^3.1.1",
-    "is-running": "^2.1.0",
-    "lodash": "^4.17.4",
-    "mkdirp": "^0.5.1",
-    "node-fetch": "^1.7.1",
-    "node-ipc": "^9.0.1",
-    "rand-token": "^0.4.0",
-    "serve-favicon": "^2.4.3",
-    "simple-youtube-api": "^5.1.1",
-    "tmi.js": "^1.2.1",
-    "twitter": "^1.7.1"
+    "aws-sdk": "^2.562.0",
+    "bluebird": "^3.5.5",
+    "discord.js": "^11.5.1",
+    "dotenv": "^8.0.0",
+    "koa": "^2.7.0",
+    "koa-bodyparser": "^4.2.1",
+    "koa-router": "^7.4.0",
+    "request-promise": "^4.2.4",
+    "source-map-support": "^0.5.12",
+    "tmi.js": "^1.5.0",
+    "twitch-webhook": "^1.2.4",
+    "twitter": "^1.7.1",
+    "yup": "^0.27.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.6.4",
+    "@babel/core": "^7.6.4",
+    "@babel/node": "^7.6.3",
+    "@babel/preset-env": "^7.6.3",
+    "@types/bluebird": "^3.5.27",
+    "@types/dotenv": "^6.1.1",
+    "@types/jest": "^24.0.13",
+    "@types/koa-bodyparser": "^4.3.0",
+    "@types/koa-router": "^7.0.40",
+    "@types/node": "^12.0.6",
+    "@types/supertest": "^2.0.7",
+    "@types/yup": "^0.26.14",
+    "concurrently": "^4.1.0",
+    "husky": "^2.4.0",
+    "jest": "^24.8.0",
+    "jest-junit": "^6.4.0",
+    "nodemon": "^1.19.4",
+    "prettier": "^1.17.1",
+    "pretty-quick": "^1.11.0",
+    "ramda": "^0.26.1",
+    "supertest": "^4.0.2",
+    "supertest-koa-agent": "^0.3.2",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.6.4"
   }
 }

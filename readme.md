@@ -1,68 +1,39 @@
-# Introducing BeastieBot
-## Welcome to the BeastieBot chatbot!
-Beastie is an ongoing community project created by [teamTALIMA](https://github.com/teamTALIMA). Originally designed for Twitch IRC chat rooms, Beastie can now also join Discord servers and Twitter accounts. Beastie is a customizable live streaming tool and online community moderator.
+# BeastieBot V3
 
-Primary Features include:
+The New Beastie is here.
 
-* Commands to display community links / general info
-* Automated messages upon live streaming events / on timers
-* System for Twitch 'raiding', including rewards for participating 'raiders'
-* Automated Twitter and Discord posts when a Twitch stream or YouTube video goes live
+**Has:**
 
-BeastieBot is a community project, and we are always interested in new ideas, features and developers interested in helping us train Beastie to be even more awesome!
+- Tmi client for Twitch
+- Webhooks server subscribed and listening to Twitch
+- Twitter client
+- Database connection for storing community currency
+- Configuration using environment variables.
+- [Yup](https://github.com/jquense/yup) for environment variable validation.
+- [Jest](https://github.com/facebook/jest) and [supertest](https://github.com/visionmedia/supertest) for testing.
+- [Prettier](https://prettier.io/) for code automagic code formatting.
+- Dockerfile.
 
-## Using BeastieBot
-### Requirements
-BeastieBot is developed in Node.js and requires the machine running him to have Node.js installed.
+**Usage:**
 
-[Install Node.js Here](https://nodejs.org/en/)
+Start development: `yarn watch`
 
-### Installation
-First, download BeastieBot by cloning this git repository into an empty directory on your machine.
+Build for production `yarn build`
 
-```
-git clone https://github.com/teamTALIMA/BeastieBot.git
-```
-To install Beastie's dependencies, open a command line pointed at his directory and run:
-```
-npm install
-```
+Test: `yarn test`
 
-To initialize Beastie, use the same command line and run:
-```
-node . init
-```
-You will be presented interactive prompts. Follow them, and provide your Twitch Client-ID, Broadcaster channel's OAuth (channel which will stream) and Bot channel's OAuth (channel which will be Beastie).
-* [*Where can I get a Twitch Client-ID?*](https://dev.twitch.tv/dashboard/apps/create)
-* [*Where do I get an OAuth Token for my Twitch account?*](https://twitchapps.com/tmi/)
+Watch tests: `yarn watch-test`
 
-To start Beastie, use the same command line and run:
-```
-npm start
-```
+**Future:**
 
-## Contributing to BeastieBot
-For project updates and discussion, we suggest that you join the teamTALIMA [Discord server](https://discordapp.com/invite/dGFQ5tE "teamTALIMA's Discord Server") or try to catch a teamTALIMA [Twitch stream](https://www.twitch.tv/teamtalima "teamTALIMA's Twitch Channel") (where we develop the project live), but neither is strictly necessary.
+- Refactor project structure by feature
+- Enable Twitter client to post when broadcaster stream state changes to 'live'
+- Add !livestream/!uptime command to display stream data
+- Edit Discord interval to link to discord server
+- Add Discord client to post when broadcaster stream state change to 'live'
 
-We encourage anyone interested in learning more about chatbot development to ‘Watch’ this project on Github and join the teamTALIMA community! Everyone from hobbyists to students to professionals to experts are welcome here. We have many teammates within our community who mentor and do their best to answer questions and share knowledge about their development process and areas of expertise.
+- Add create database script for developers
+- Restart Beastie automatically on shut down
 
-### How do I contribute?
-All contributions should be made through [teamTALIMA's](https://github.com/teamTALIMA) BeastieBot repository. Create a ‘Pull Request’ with your contribution and description of contribution, and it will be reviewed by one of our project managers. Pull requests should contain as few changes as possible (only those necessary to implement the single, new feature the pull request is contributing) in order to avoid conflicts when merging into the project.
-
-> *Note:* Many pull requests will need to be critiqued/revised slightly to merge with the project properly. This is standard. Do not be discouraged if your contribution is not accepted immediately.
-
-## Who are the Project Managers?
-* Talima (via teamTALIMA account)
-* Scryptonite
-
-## teamTALIMA Community Links
-[GitHub Repo for teamTALIMA: theGAME](https://github.com/teamTALIMA/teamTALIMA_theGAME "teamTALIMA's theGAME Repo")
-
-[Twitch Channel](https://www.twitch.tv/teamtalima "teamTALIMA's Twitch Channel")
-
-[Discord Server](https://discordapp.com/invite/dGFQ5tE "teamTALIMA's Discord Server")
-
-[YouTube Channel](https://www.youtube.com/channel/UCKjIJW6mQg7rEnDJ-KnVL-w "teamTALIMA's YouTube Channel")
-
-## License
-GNU GPLv3
+- Add Raid System/Features
+- Create markdown file with full feature list
