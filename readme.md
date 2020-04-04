@@ -26,6 +26,7 @@ Watch tests: `yarn watch-test`
 
 **Future:**
 
+- Clean project of base template packages/scripts/files
 - Refactor project structure by feature
 - Enable Twitter client to post when broadcaster stream state changes to 'live'
 - Add !livestream/!uptime command to display stream data
