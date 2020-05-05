@@ -40,4 +40,9 @@ export default class BeastieTwitterClient {
     const msg = await twitterPosts(event, streamId);
     this.say(msg);
   };
+
+  public postMessage = async discordMsg => {
+    const msg = `${discordMsg} #teamTALIMA #bot`;
+    this.say(msg);
+  };
 }

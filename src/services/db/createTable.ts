@@ -1,10 +1,12 @@
 import config from "../../config";
 
-export const createTeammateTable = db => {
+export const createTeammateTable = async db => {
   const tableParams = {
     TableName: config.DATABASE_TEAMMATE_TABLE,
-    KeySchema: [{ AttributeName: "username", KeyType: "HASH" }],
-    AttributeDefinitions: [{ AttributeName: "username", AttributeType: "S" }],
+    KeySchema: [{ AttributeName: "twitchUserId", KeyType: "HASH" }],
+    AttributeDefinitions: [
+      { AttributeName: "twitchUserId", AttributeType: "S" }
+    ],
     ProvisionedThroughput: {
       ReadCapacityUnits: 10,
       WriteCapacityUnits: 10
@@ -14,16 +16,11 @@ export const createTeammateTable = db => {
   console.log(
     `Creating database table: "${config.DATABASE_TEAMMATE_TABLE}"...`
   );
-  db.createTable(tableParams, (err, data) => {
-    if (err)
-      console.error(
-        "Unable to create table. Error JSON:",
-        JSON.stringify(err, null, 2)
-      );
-    else
-      console.log(
-        "Created table. Table description JSON:",
-        JSON.stringify(data, null, 2)
-      );
-  });
+
+  try {
+    const data = await db.createTable(tableParams).promise();
+    console.log("Created table!", data);
+  } catch (error) {
+    console.log("Problem creating table ...", error);
+  }
 };

@@ -56,5 +56,5 @@ export const endRaidMessage = `The raid is over! Great raid team, and thanks for
 export const discordGuild = {
   guildName: "teamTALIMA",
   welcomeCh: "general",
-  announcementsCh: "announcements"
+  talimasFeedCh: "talimas-feed"
 };

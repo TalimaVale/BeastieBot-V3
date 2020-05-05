@@ -9,7 +9,7 @@ export default class BeastieDiscordClient {
   discordGuildId: string;
 
   discordWelcomeChId: string;
-  discordAnnouncementsChId: string;
+  discordTalimasFeedChId: string;
 
   constructor() {
     this.client = new Discord.Client();
@@ -38,17 +38,18 @@ export default class BeastieDiscordClient {
   private say = (channel, msg) => {
     if (Array.isArray(msg))
       msg.forEach(m => {
-        //this.client.channels.get(channel).send(m, {});
+        (this.client.channels.get(channel) as Discord.TextChannel).send(m, {});
       });
-    //else this.client.channels.get(channel).send(msg, {});
+    else
+      (this.client.channels.get(channel) as Discord.TextChannel).send(msg, {});
   };
 
   private discordChannels = event => {
     switch (event) {
       case POST_EVENT.LIVE:
-        return this.discordAnnouncementsChId;
+        return this.discordTalimasFeedChId;
       default:
-        return this.discordAnnouncementsChId;
+        return this.discordTalimasFeedChId;
     }
   };
 
@@ -60,7 +61,7 @@ export default class BeastieDiscordClient {
 
   // Event Handlers
   private onDisconnect() {
-    this.say(this.discordAnnouncementsChId, beastieDisconnectMessage);
+    this.say(this.discordTalimasFeedChId, beastieDisconnectMessage);
   }
 
   private onReady() {
@@ -68,7 +69,8 @@ export default class BeastieDiscordClient {
 
     this.discordGuildId = response.discordGuildId;
     this.discordWelcomeChId = response.discordWelcomeChId;
-    this.discordAnnouncementsChId = response.discordAnnouncementsChId;
+    this.discordTalimasFeedChId = response.discordTalimasFeedChId;
+    //this.say(this.discordWelcomeChId, "rawr");
   }
 
   private onGuildMemberAdd = async member => {

@@ -2,6 +2,8 @@ import rp from "request-promise";
 import R = require("ramda");
 import config from "../config";
 import db from "../services/db";
+import { createTeammateTable } from "../services/db/createTable";
+import dynamoDB from "../services/db";
 
 export const isBroadcaster = name => {
   return name === config.BROADCASTER_USERNAME;
@@ -29,11 +31,9 @@ export const getBroadcasterDisplayName = async () => {
   return userArray.data[0].display_name;
 };
 
-const getBroadcasterStream = async () => {
+const getBroadcasterStream = async broadcasterID => {
   const stream = await rp({
-    uri: `https://api.twitch.tv/helix/streams?first=1&user_id=${
-      config.BROADCASTER_USERNAME
-    }`,
+    uri: `https://api.twitch.tv/helix/streams?first=1&user_id=${broadcasterID}`,
     headers: {
       "Client-ID": config.CLIENT_ID
     },
@@ -43,7 +43,8 @@ const getBroadcasterStream = async () => {
 };
 
 export const initStream = async () => {
-  const stream = await getBroadcasterStream();
+  const broadcasterID = await getBroadcasterId();
+  const stream = await getBroadcasterStream(broadcasterID);
 
   const live = stream.data[0] && stream.data[0].type === "live" ? true : false;
   const id = stream.data[0] && stream.data[0].id;
@@ -51,33 +52,31 @@ export const initStream = async () => {
   return { live, id };
 };
 
-const updateAwesomenessRequest = (username, amount) => ({
+const requestAddAwesomeness = (id, username, amount) => ({
   Key: {
-    username: {
-      S: username
+    twitchUserId: {
+      S: id
     }
   },
   TableName: config.DATABASE_TEAMMATE_TABLE,
   ExpressionAttributeNames: {
-    "#A": "awesomeness"
+    "#A": "awesomeness",
+    "#UN": "username"
   },
   ExpressionAttributeValues: {
     ":A": {
       N: `${amount}`
+    },
+    ":UN": {
+      S: username
     }
   },
-  UpdateExpression: "ADD #A :A",
+  UpdateExpression: "ADD #A :A SET #UN = :UN",
   ReturnValues: "ALL_NEW"
 });
 
-const concatAllChatters = R.pipe(
-  R.values,
-  R.reduce(R.concat)([]),
-  R.uniq
-);
-
 const getChatroomViewers = async () => {
-  const chatters = await rp({
+  const { chatters = {} } = await rp({
     uri: `https://tmi.twitch.tv/group/user/${
       config.BROADCASTER_USERNAME
     }/chatters`,
@@ -86,26 +85,59 @@ const getChatroomViewers = async () => {
     },
     json: true
   });
-  return { chatters };
+
+  const usernames = Object.values(chatters).flat();
+
+  const arraysOfUsernames = usernames
+    .reduce(
+      ([_ = [], ...rest], username) =>
+        _.length < 100 ? [[..._, username], ...rest] : [[username], _, ...rest],
+      []
+    )
+    .reverse();
+
+  const userIdQueryStrings = arraysOfUsernames.map(
+    usernames => `login=${usernames.join("&login=")}`
+  );
+
+  let viewers = [];
+  for (const query of userIdQueryStrings) {
+    const { data: profiles = [] } = await rp({
+      uri: `https://api.twitch.tv/helix/users?${query}`,
+      headers: {
+        "Client-ID": config.CLIENT_ID
+      },
+      json: true
+    });
+
+    viewers.push(...profiles.map(({ id, login: username }) => [id, username]));
+  }
+
+  return viewers;
+};
+
+const checkDatabaseTables = async table => {
+  const { TableNames = [] } = await dynamoDB.listTables().promise();
+  return TableNames.includes(table);
 };
 
 export const updateChattersAwesomeness = async amount => {
-  const chatters = await getChatroomViewers();
-  const usernames: Array<string> = concatAllChatters(chatters);
+  const teammateTableExists = await checkDatabaseTables(
+    config.DATABASE_TEAMMATE_TABLE
+  );
+
+  if (!teammateTableExists) await createTeammateTable(db);
+
+  const viewers = await getChatroomViewers();
+  console.log(viewers);
 
   await Promise.all(
-    usernames
-      .map(u => updateAwesomenessRequest(u, amount))
-      .map(
-        req =>
-          new Promise((resolve, reject) => {
-            db.updateItem(req, (err, result) =>
-              err ? reject(err) : resolve(result)
-            );
-          })
-      )
+    viewers.map(([id, username]) =>
+      db.updateItem(requestAddAwesomeness(id, username, amount)).promise()
+    )
   );
+
   console.log(
-    `AWESOMENESS: ${usernames.length} teammates recieved ${amount} awesomeness`
+    `AWESOMENESS: ${viewers.length} teammates received ${amount} awesomeness`
   );
 };

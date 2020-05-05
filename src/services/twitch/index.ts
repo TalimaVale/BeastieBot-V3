@@ -86,10 +86,12 @@ export default class BeastieTwitchService {
 
   public toggleStreamIntervals = live => {
     if (live) {
-      console.log("intervals running");
+      console.log("stream intervals running");
       if (this.awesomenessInterval === undefined)
         this.awesomenessInterval = setInterval(async () => {
-          updateChattersAwesomeness(this.awesomenessIntervalAmount);
+          updateChattersAwesomeness(this.awesomenessIntervalAmount).catch(
+            error => console.log("updateChattersAwesomeness ERROR", error)
+          );
         }, awesomenessInterval);
       if (this.discordInterval === undefined)
         this.discordInterval = setInterval(async () => {

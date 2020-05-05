@@ -1,11 +1,7 @@
-import tmi from "tmi.js";
-import Twitter from "twitter";
-import Discord from "discord.js";
 import config from "../config";
 import TwitchWebhooksServer from "../services/twitchWebhooks";
 import BeastieTwitterClient from "../services/twitter";
-import { getBroadcasterId } from "../utils";
-import { initStream } from "../utils";
+import { getBroadcasterId, initStream } from "../utils";
 import handleStreamChange from "../services/twitchWebhooks/streamChange";
 import BeastieTwitchClient from "../services/twitch";
 import { POST_EVENT } from "../utils/values";
@@ -90,6 +86,10 @@ export default class BeastieBot {
   initDiscord() {
     const discordClient = new BeastieDiscordClient();
 
+    discordClient.client.on("message", message => {
+      this.onDiscordMessage(message);
+    });
+
     console.log(`discord init finished`);
     return discordClient;
   }
@@ -141,4 +141,9 @@ export default class BeastieBot {
     this.twitchClient.post(POST_EVENT.TWITCH_NEW_SUB, user_name);
     // twitter and discord post for subscriber milestones per stream
   }
+
+  private onDiscordMessage = message => {
+    if (message.channel.id === this.discordClient.discordTalimasFeedChId)
+      this.twitterClient.postMessage(message);
+  };
 }

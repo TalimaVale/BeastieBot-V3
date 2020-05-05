@@ -11,10 +11,10 @@ export const handleDiscordReady = discordClient => {
     .get(discordGuildId)
     .channels.find(ch => ch.name === discordGuild.welcomeCh).id;
 
-  // get announcements channel
-  const discordAnnouncementsChId = discordClient.guilds
+  // get talimas-feed channel
+  const discordTalimasFeedChId = discordClient.guilds
     .get(discordGuildId)
-    .channels.find(ch => ch.name === discordGuild.announcementsCh).id;
+    .channels.find(ch => ch.name === discordGuild.talimasFeedCh).id;
 
-  return { discordGuildId, discordWelcomeChId, discordAnnouncementsChId };
+  return { discordGuildId, discordWelcomeChId, discordTalimasFeedChId };
 };
