@@ -1,18 +1,23 @@
 import rp from "request-promise";
-import R = require("ramda");
 import config from "../config";
-import db from "../services/db";
-import { createTeammateTable } from "../services/db/createTable";
+import { awesomenessInterval } from "./values";
 import dynamoDB from "../services/db";
+import { createTeammateTable } from "../services/db/createTable";
+
+export const isGuildMaster = name => {
+  return name === config.DISCORD_GUILD_MASTER_USERNAME;
+};
 
 export const isBroadcaster = name => {
   return name === config.BROADCASTER_USERNAME;
 };
 
-const getBroadcaster = async () => {
+const getUser = async username => {
+  username = username.toLowerCase();
+
   const userArray = await rp({
     uri: "https://api.twitch.tv/helix/users",
-    qs: { login: config.BROADCASTER_USERNAME },
+    qs: { login: username },
     headers: {
       "Client-ID": `${config.CLIENT_ID}`
     },
@@ -22,12 +27,12 @@ const getBroadcaster = async () => {
 };
 
 export const getBroadcasterId = async () => {
-  const userArray = await getBroadcaster();
+  const userArray = await getUser(config.BROADCASTER_USERNAME);
   return userArray.data[0].id;
 };
 
 export const getBroadcasterDisplayName = async () => {
-  const userArray = await getBroadcaster();
+  const userArray = await getUser(config.BROADCASTER_USERNAME);
   return userArray.data[0].display_name;
 };
 
@@ -61,7 +66,8 @@ const requestAddAwesomeness = (id, username, amount) => ({
   TableName: config.DATABASE_TEAMMATE_TABLE,
   ExpressionAttributeNames: {
     "#A": "awesomeness",
-    "#UN": "username"
+    "#UN": "username",
+    "#WT": "watchTime"
   },
   ExpressionAttributeValues: {
     ":A": {
@@ -69,10 +75,22 @@ const requestAddAwesomeness = (id, username, amount) => ({
     },
     ":UN": {
       S: username
+    },
+    ":WT": {
+      N: `${awesomenessInterval / 60 / 1000}`
     }
   },
-  UpdateExpression: "ADD #A :A SET #UN = :UN",
+  UpdateExpression: "ADD #A :A, #WT :WT SET #UN = :UN",
   ReturnValues: "ALL_NEW"
+});
+
+const requestReadAwesomeness = id => ({
+  Key: {
+    twitchUserId: {
+      S: id
+    }
+  },
+  TableName: config.DATABASE_TEAMMATE_TABLE
 });
 
 const getChatroomViewers = async () => {
@@ -121,23 +139,71 @@ const checkDatabaseTables = async table => {
   return TableNames.includes(table);
 };
 
-export const updateChattersAwesomeness = async amount => {
+const checkTeammateTable = async () => {
   const teammateTableExists = await checkDatabaseTables(
     config.DATABASE_TEAMMATE_TABLE
   );
 
-  if (!teammateTableExists) await createTeammateTable(db);
+  if (!teammateTableExists) await createTeammateTable(dynamoDB);
+};
+
+export const readAwesomeness = async (user, displayName) => {
+  checkTeammateTable();
+
+  const { data } = await getUser(user);
+
+  if (data[0]) {
+    const { id, display_name: userDisplayName } = data[0];
+
+    const dbItem: any = await dynamoDB
+      .getItem(requestReadAwesomeness(id))
+      .promise();
+
+    if (dbItem.Item) {
+      const awesomeness = dbItem.Item.awesomeness.N;
+      const userRead =
+        userDisplayName === displayName ? `You have` : `${userDisplayName} has`;
+
+      return `${displayName}, ${userRead} ${awesomeness} awesomeness`;
+    } else return `I cannot find that teammate...`;
+  } else return `I cannot find that username...`;
+};
+
+export const updateTeammateAwesomeness = async (user, amount) => {
+  checkTeammateTable();
+
+  const { data } = await getUser(user);
+
+  if (data[0]) {
+    const { id, login: username, display_name: displayName } = data[0];
+
+    await dynamoDB
+      .updateItem(requestAddAwesomeness(id, username, amount))
+      .promise();
+
+    console.log(`AWESOMENESS: ${displayName} received ${amount} awesomeness`);
+    return `Awarded ${displayName} ${amount} Awesomeness!`;
+  } else return `I cannot find that username...`;
+};
+
+export const updateChattersAwesomeness = async amount => {
+  checkTeammateTable();
 
   const viewers = await getChatroomViewers();
   console.log(viewers);
 
-  await Promise.all(
-    viewers.map(([id, username]) =>
-      db.updateItem(requestAddAwesomeness(id, username, amount)).promise()
-    )
-  );
+  if (viewers) {
+    await Promise.all(
+      viewers.map(([id, username]) =>
+        dynamoDB
+          .updateItem(requestAddAwesomeness(id, username, amount))
+          .promise()
+      )
+    );
 
-  console.log(
-    `AWESOMENESS: ${viewers.length} teammates received ${amount} awesomeness`
-  );
+    console.log(
+      `AWESOMENESS: ${viewers.length} teammates received ${amount} awesomeness`
+    );
+    return `Awarded ${viewers.length} Awesomeness to all stream viewers!`;
+  } else return `Cannot find viewers...`;
 };

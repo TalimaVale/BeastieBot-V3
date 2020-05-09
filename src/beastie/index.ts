@@ -66,6 +66,7 @@ export default class BeastieBot {
     twitchWebhooks.server.on("users/follows", payload => {
       this.onFollow(payload);
     });
+
     twitchWebhooks.server.on("subscriptions/events", payload => {
       this.onSubscribe(payload);
     });

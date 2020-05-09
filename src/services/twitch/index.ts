@@ -1,7 +1,8 @@
 import tmi from "tmi.js";
 import twitchOptions from "./twitchOptions";
 import config from "../../config";
-import { determineBeastieResponse } from "./message";
+import CommandContext from "../../beastie/commands/utils/commandContext";
+import determineCommand from "../../beastie/commands";
 import { checkForRaidMessage } from "../../beastie/raid";
 import { startRaiding } from "../../beastie/raid";
 import { endRaid } from "../../beastie/raid";
@@ -112,13 +113,37 @@ export default class BeastieTwitchService {
     this.say(beastieDisconnectMessage);
   };
 
-  private onMessage = (channel, tags, message) => {
-    const response = determineBeastieResponse(this, tags, message);
+  private onMessage = async (channel, tags, message) => {
+    if (message.startsWith("!")) {
+      const [command = "!", para1 = "", para2 = ""] = message.split(" ");
+      const badges = tags.badges ? Object.keys(tags.badges) : [];
+
+      const commandModule = determineCommand(command.slice(1), badges);
+      if (commandModule) {
+        const platform = "twitch";
+        const client = this;
+        const username = tags.username;
+        const displayName = tags["display-name"];
+
+        const response = await commandModule.execute(
+          new CommandContext({
+            platform,
+            client,
+            message,
+            command,
+            para1,
+            para2,
+            username,
+            displayName
+          })
+        );
+
+        if (response) this.say(response);
+      }
+    }
 
     if (this.activeRaid && this.hostedChannel !== "")
       checkForRaidMessage(this, channel, tags, message);
-
-    if (response) this.say(response);
   };
 
   private onHosting = async (target, viewers) => {

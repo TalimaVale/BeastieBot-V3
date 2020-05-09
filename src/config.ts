@@ -9,6 +9,7 @@ interface Config {
   BROADCASTER_USERNAME: string;
   BROADCASTER_PASSWORD: string;
   DATABASE_TEAMMATE_TABLE: string;
+  DISCORD_GUILD_MASTER_USERNAME: string;
   DISCORD_CLIENT_ID: string;
   DISCORD_CLIENT_SECRET: string;
   DISCORD_TOKEN: string;
@@ -30,6 +31,7 @@ const config = yup.object().shape({
   BROADCASTER_USERNAME: yup.string().required(),
   BROADCASTER_PASSWORD: yup.string().required(),
   DATABASE_TEAMMATE_TABLE: yup.string().required(),
+  DISCORD_GUILD_MASTER_USERNAME: yup.string().required(),
   DISCORD_CLIENT_ID: yup.string().required(),
   DISCORD_CLIENT_SECRET: yup.string().required(),
   DISCORD_TOKEN: yup.string().required(),

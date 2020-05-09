@@ -1,20 +1,60 @@
 // Beastie Faces (Emotes)
-export const beastieFaceEmotes = [
+export const beastieFaceTwitchEmotes = [
+  "OhMyDog",
+  "OhMyDog",
+  "OhMyDog",
+  "OhMyDog",
   "OhMyDog",
   ":)",
   ":D",
   ";P",
-  "OhMyDog",
   "BloodTrail",
   "CoolCat",
   "OSFrog",
-  "OhMyDog",
   "SeriousSloth",
   "KomodoHype",
   "RaccAttack",
-  "OhMyDog",
   "SSSsss",
-  "OhMyDog"
+  "teamta1RAWR"
+];
+
+export const beastieFaceDiscordEmotes = [
+  ":smiling_imp:",
+  ":smiling_imp:",
+  ":smiling_imp:",
+  ":alien:",
+  ":smiley_cat:",
+  ":smirk_cat:",
+  ":dog:",
+  ":fox:",
+  ":bear:",
+  ":koala:",
+  ":tiger:",
+  ":eagle:",
+  ":wolf:",
+  ":wolf:",
+  ":wolf:",
+  ":t_rex:",
+  ":crocodile:",
+  ":shark:",
+  ":rhino:",
+  ":raccoon:",
+  ":dragon:",
+  ":dragon:",
+  ":dragon:",
+  ":dragon:",
+  ":dragon_face:",
+  ":dragon_face:",
+  ":dragon_face:",
+  ":dragon_face:",
+  ":wave:",
+  ":wave:",
+  "<:talSalute:287925661350494210>",
+  "<:talSalute:287925661350494210>",
+  "<:teamta1RAWR:704871701992702013>",
+  "<:teamta1RAWR:704871701992702013>",
+  "<:teamta1RAWR:704871701992702013>",
+  "<:teamta1RAWR:704871701992702013>"
 ];
 
 // Beastie Connect and Disconnect
@@ -32,15 +72,15 @@ export enum POST_EVENT {
 }
 
 // Twitch Intervals Feature
-export const awesomenessInterval = 1000 * 5; // add 60 when not testing
-export const awesomenessIntervalAmount = 1;
+export const awesomenessInterval = 1000 * 60 * 5; // KEEP MILLISECONDS, used by database
+export const awesomenessIntervalAmount = 5;
 
-export const discordInterval = 1000 * 60 * 30;
+export const discordInterval = 1000 * 60 * 20;
 export const discordIntervalMessage = `Hey team! Make sure you don't miss out on joining our Discord guild! Talima hosts voice chats and we organize dev projects on Discord! https://discord.gg/yBXqgus`;
 
 // Raid Feature
 export const raidTimer = 1000 * 60;
-export const raidMessage = `yolo!!`;
+export const raidMessage = ` RAWR twitchRaid RAWR twitchRaid RAWR twitchRaid RAWR twitchRaid`;
 
 export const startRaidMessage = `Time to raid! Join the raid team with !joinraid to receive bonus awesomeness in our channel at the end of the raid!`;
 export const joinRaidTeamSuccessWhisper = `You have successfully joined the raid team!`;
