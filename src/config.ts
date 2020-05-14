@@ -17,6 +17,7 @@ interface Config {
   TWITTER_CONSUMER_SECRET: string;
   TWITTER_ACCESS_TOKEN_KEY: string;
   TWITTER_ACCESS_TOKEN_SECRET: string;
+  LOG_LEVEL: string;
 }
 
 const config = yup.object().shape({
@@ -38,7 +39,8 @@ const config = yup.object().shape({
   TWITTER_CONSUMER_KEY: yup.string().required(),
   TWITTER_CONSUMER_SECRET: yup.string().required(),
   TWITTER_ACCESS_TOKEN_KEY: yup.string().required(),
-  TWITTER_ACCESS_TOKEN_SECRET: yup.string().required()
+  TWITTER_ACCESS_TOKEN_SECRET: yup.string().required(),
+  LOG_LEVEL: yup.string().required()
 });
 
 export default <Config>config.validateSync(process.env, { stripUnknown: true });

@@ -1,6 +1,8 @@
 import config from "../../config";
+import DynamoDB from "aws-sdk/clients/dynamodb";
+import { BeastieLogger } from "../../utils/Logging";
 
-export const createTeammateTable = async db => {
+export const createTeammateTable = async (db: DynamoDB) => {
   const tableParams = {
     TableName: config.DATABASE_TEAMMATE_TABLE,
     KeySchema: [{ AttributeName: "twitchUserId", KeyType: "HASH" }],
@@ -13,14 +15,14 @@ export const createTeammateTable = async db => {
     }
   };
 
-  console.log(
+  BeastieLogger.info(
     `Creating database table: "${config.DATABASE_TEAMMATE_TABLE}"...`
   );
 
   try {
     const data = await db.createTable(tableParams).promise();
-    console.log("Created table!", data);
+    BeastieLogger.warn("Created table!", data);
   } catch (error) {
-    console.log("Problem creating table ...", error);
+    BeastieLogger.error("Problem creating table ...", error);
   }
 };

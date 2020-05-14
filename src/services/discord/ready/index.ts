@@ -1,10 +1,15 @@
 import { discordGuild } from "../../../utils/values";
 
 export const handleDiscordReady = discordClient => {
-  // get guild
-  const discordGuildId = discordClient.guilds.find(
+  const guild = discordClient.guilds.find(
     g => g.name === discordGuild.guildName
-  ).id;
+  );
+  if (!guild) {
+    throw `Could not find guild specified ${discordGuild.guildName}`;
+  }
+
+  // get guild
+  const discordGuildId = guild.id;
 
   // get welcome channel
   const discordWelcomeChId = discordClient.guilds

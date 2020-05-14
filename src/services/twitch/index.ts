@@ -19,6 +19,7 @@ import {
 } from "../../utils/values";
 import { updateChattersAwesomeness } from "../../utils";
 import twitchPosts from "./twitchPosts";
+import { BeastieLogger } from "../../utils/Logging";
 
 export default class BeastieTwitchService {
   client: tmi.Client;
@@ -38,6 +39,7 @@ export default class BeastieTwitchService {
   discordInterval: NodeJS.Timeout;
 
   constructor() {
+    // @ts-ignore
     this.client = new tmi.Client(twitchOptions);
     this.broadcasterUsername = config.BROADCASTER_USERNAME;
     this.awesomenessIntervalAmount = awesomenessIntervalAmount;
@@ -48,56 +50,68 @@ export default class BeastieTwitchService {
     this.raidReward = 0;
 
     // Event Listeners
-    this.client.on("message", (channel, tags, message, self) => {
-      if (!self) this.onMessage(channel, tags, message);
+    this.client.on("message", async (channel, tags, message, self) => {
+      if (!self) await this.onMessage(channel, tags, message);
     });
 
-    this.client.on("hosting", (channel, target, viewers) => {
-      this.onHosting(target, viewers);
+    this.client.on("hosting", async (channel, target, viewers) => {
+      try {
+        await this.onHosting(target, viewers);
+      } catch (e) {
+        BeastieLogger.warn(`Failed handling hosting: ${e}`);
+      }
     });
 
-    this.client.on("connected", () => {
-      this.onConnect();
+    this.client.on("connected", async () => {
+      BeastieLogger.info(`Beastie has connected to twitch`);
+      await this.onConnect();
     });
 
-    this.client.on("disconnected", () => {
-      console.log("BEASTIE HAS BEEN DISCONNECTED FROM TWITCH");
-      this.onDisconnect();
+    this.client.on("disconnected", async () => {
+      BeastieLogger.info("BEASTIE HAS BEEN DISCONNECTED FROM TWITCH");
+      await this.onDisconnect();
     });
 
-    process.on("SIGINT", () => {
-      console.log("SHUTTING DOWN ON SIGINT");
-      this.onDisconnect();
+    process.on("SIGINT", async () => {
+      BeastieLogger.info("SHUTTING DOWN ON SIGINT");
+      await this.onDisconnect();
       setTimeout(() => process.exit(), 500);
     });
   }
 
   // BeastieTwitchClient Actions
-  private say = msg => {
-    if (Array.isArray(msg))
-      msg.forEach(m => {
-        this.client.say(this.broadcasterUsername, m);
-      });
-    else this.client.say(this.broadcasterUsername, msg);
+  private say = async msg => {
+    if (Array.isArray(msg)) {
+      for (const m of msg) {
+        await this.say(m);
+      }
+    } else {
+      try {
+        await this.client.say(this.broadcasterUsername, msg);
+      } catch (e) {
+        BeastieLogger.warn(`Failed to send message: ${e}`);
+      }
+    }
   };
 
   public post = (event, name) => {
     const msg = twitchPosts(event, name);
-    this.say(msg);
+    return this.say(msg);
   };
 
   public toggleStreamIntervals = live => {
     if (live) {
-      console.log("Stream intervals running...");
+      BeastieLogger.info("Stream intervals running...");
       if (this.awesomenessInterval === undefined)
-        this.awesomenessInterval = setInterval(async () => {
+        this.awesomenessInterval = setInterval(() => {
           updateChattersAwesomeness(this.awesomenessIntervalAmount).catch(
-            error => console.log("updateChattersAwesomeness ERROR", error)
+            error =>
+              BeastieLogger.error(`updateChattersAwesomeness ERROR ${error}`)
           );
         }, awesomenessInterval);
       if (this.discordInterval === undefined)
         this.discordInterval = setInterval(async () => {
-          this.client.say(discordIntervalMessage);
+          await this.say(discordIntervalMessage);
         }, discordInterval);
     } else {
       clearInterval(this.awesomenessInterval);
@@ -106,27 +120,33 @@ export default class BeastieTwitchService {
   };
 
   // Event Handlers
-  private onConnect = () => {
-    this.say(beastieConnectMessage);
+  private onConnect = async () => {
+    await this.say(beastieConnectMessage);
   };
 
-  private onDisconnect = () => {
-    this.say(beastieDisconnectMessage);
+  private onDisconnect = async () => {
+    await this.say(beastieDisconnectMessage);
   };
 
   private onMessage = async (channel, tags, message) => {
-    if (message.startsWith("!")) {
-      const [command = "!", para1 = "", para2 = ""] = message.split(" ");
-      const badges = tags.badges ? Object.keys(tags.badges) : [];
-      if (badges.includes("broadcaster")) badges.push("moderator");
+    if (!message.startsWith("!")) {
+      if (this.activeRaid && this.hostedChannel !== "") {
+        checkForRaidMessage(this, channel, tags, message);
+        return;
+      }
+    }
+    const [command = "!", para1 = "", para2 = ""] = message.split(" ");
+    const badges = tags.badges ? Object.keys(tags.badges) : [];
+    if (badges.includes("broadcaster")) badges.push("moderator");
 
-      const commandModule = determineCommand(command.slice(1), badges);
-      if (commandModule) {
-        const platform = "twitch";
-        const client = this;
-        const username = tags.username;
-        const displayName = tags["display-name"];
+    const commandModule = determineCommand(command.slice(1), badges);
+    if (commandModule) {
+      const platform = "twitch";
+      const client = this;
+      const username = tags.username;
+      const displayName = tags["display-name"];
 
+      try {
         const response = await commandModule.execute(
           new CommandContext({
             platform,
@@ -140,33 +160,31 @@ export default class BeastieTwitchService {
           })
         );
 
-        if (response) this.say(response);
+        if (response) await this.say(response);
+      } catch (reason) {
+        BeastieLogger.warn(`Failed to execute command because: ${reason}`);
       }
     }
-
-    if (this.activeRaid && this.hostedChannel !== "")
-      checkForRaidMessage(this, channel, tags, message);
   };
 
   private onHosting = async (target, viewers) => {
-    if (this.activeRaid) {
-      const startResponse = startRaiding(this, target, viewers);
-      this.say(startResponse);
+    if (!this.activeRaid) {
+      await this.post(POST_EVENT.TWITCH_HOSTING, target);
+    }
 
-      // TODO: UnhandledPromiseRejectionWarning
-      const endResponse: any = await new Promise((resolve, reject) => {
-        setTimeout(() => {
-          try {
-            resolve(endRaid(this.client, target, this.raidReward));
-          } catch (e) {
-            reject(e);
-          }
-        }, raidTimer);
-      });
-      this.activeRaid = endResponse.activeRaid;
-      this.raidTeam = endResponse.raidTeam;
-      this.raidReward = endResponse.raidReward;
-      this.say(endResponse.messages);
-    } else this.post(POST_EVENT.TWITCH_HOSTING, target);
+    const startResponse = startRaiding(this, target, viewers);
+    await this.say(startResponse);
+
+    setTimeout(async () => {
+      try {
+        const endResponse = endRaid(this.client, target, this.raidReward);
+        this.activeRaid = endResponse.activeRaid;
+        this.raidTeam = endResponse.raidTeam;
+        this.raidReward = endResponse.raidReward;
+        await this.say(endResponse.messages);
+      } catch (e) {
+        BeastieLogger.warn(`Failed to end raid: ${e}`);
+      }
+    }, raidTimer);
   };
 }

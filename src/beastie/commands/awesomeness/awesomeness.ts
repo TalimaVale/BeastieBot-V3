@@ -1,4 +1,5 @@
 import { readAwesomeness } from "../../../utils";
+import { BeastieLogger } from "../../../utils/Logging";
 
 export const command = "awesomeness";
 
@@ -9,7 +10,7 @@ export const execute = async ({ platform, username, displayName, para1 }) => {
 
   if (user !== "") {
     const msg = await readAwesomeness(user, displayName).catch(error =>
-      console.log("readAwesomeness ERROR", error)
+      BeastieLogger.warn(`readAwesomeness ERROR: ${error}`)
     );
     return platform === "twitch" ? `@${msg}` : msg;
   }

@@ -21,8 +21,8 @@ const postLive = broadcaster => {
   return `BeastieBot is rawring because we are LIVE! RAWR https://www.twitch.tv/${broadcaster}`;
 };
 
-const postFollows5 = () => {
+/*const postFollows5 = () => {
   return;
-};
+};*/
 
 export default discordPosts;

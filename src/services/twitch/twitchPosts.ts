@@ -8,6 +8,8 @@ const twitchPosts = (event, name) => {
       return postNewTwitchFollow(name);
     case POST_EVENT.TWITCH_HOSTING:
       return postHosting(name);
+    case POST_EVENT.END_OF_STREAM:
+      return postEndOfStream();
     default:
       return;
   }
@@ -25,8 +27,12 @@ const postHosting = name => {
   return `We are now hosting ${name}! Take this portal and join their chat :) twitch.tv/${name}`;
 };
 
-const postFollows5 = () => {
-  return;
+const postEndOfStream = () => {
+  return `Goodbye, thanks for watching`;
 };
+
+/*const postFollows5 = () => {
+  return;
+};*/
 
 export default twitchPosts;

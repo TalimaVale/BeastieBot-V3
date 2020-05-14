@@ -1,5 +1,6 @@
 import TwitchWebhook from "twitch-webhook";
 import twitchWebhookOptions from "./twitchWebhookOptions";
+import { BeastieLogger } from "../../utils/Logging";
 
 export default class TwitchWebhooksServer {
   server: TwitchWebhook;
@@ -9,14 +10,24 @@ export default class TwitchWebhooksServer {
   }
 
   private subscribeTwitchWebhooks = id => {
-    this.server.subscribe("users/follows", {
-      first: 1,
-      to_id: id
-    });
-
-    this.server.subscribe("streams", {
-      user_id: id
-    });
+    this.server
+      .subscribe("users/follows", {
+        first: 1,
+        to_id: id
+      })
+      .then(() => {
+        this.server
+          .subscribe("streams", {
+            user_id: id
+          })
+          .then(() => {})
+          .catch(reason => {
+            BeastieLogger.warn(`subscribeTwitchWebhooks failed: ${reason}`);
+          });
+      })
+      .catch(reason => {
+        BeastieLogger.warn(`subscribeTwitchWebhooks failed: ${reason}`);
+      });
 
     // this.server.subscribe('subscriptions/events', {
     //   broadcaster_id: id,
@@ -30,8 +41,15 @@ export default class TwitchWebhooksServer {
 
     // unsubscribe from all when app stops
     process.on("SIGINT", () => {
-      this.server.unsubscribe("*");
-      process.exit(0);
+      this.server
+        .unsubscribe("*")
+        .then(() => {
+          process.exit(0);
+        })
+        .catch(reason => {
+          BeastieLogger.warn(`Errored during SIGINT twitchWebhooks ${reason}`);
+          process.exit(0);
+        });
     });
   };
 

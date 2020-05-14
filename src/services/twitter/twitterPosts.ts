@@ -15,8 +15,8 @@ const postLive = (broadcaster, streamId) => {
   return `BeastieBot is rawring because we are LIVE! RAWR https://www.twitch.tv/${broadcaster}#stream-${streamId} #${broadcaster} #GameDev #WebDev`;
 };
 
-const postFollows5 = () => {
+/*const postFollows5 = () => {
   return;
-};
+};*/
 
 export default twitterPosts;

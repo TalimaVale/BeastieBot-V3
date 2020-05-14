@@ -1,6 +1,7 @@
 import Twitter from "twitter";
 import twitterOptions from "./twitterOptions";
 import twitterPosts from "./twitterPosts";
+import { BeastieLogger } from "../../utils/Logging";
 
 export default class BeastieTwitterClient {
   client: Twitter;
@@ -15,11 +16,16 @@ export default class BeastieTwitterClient {
       {
         status: msg
       },
-      (error, tweet, response) => {
-        if (error) throw error;
+      (error, tweet) => {
+        if (error) {
+          BeastieLogger.warn(
+            `Failed to post to twitter: ${JSON.stringify(error)}`
+          );
+          throw error;
+        }
         const { created_at, id, text, entities, user } = tweet;
         const { id: userId, screen_name } = user;
-        console.log(
+        BeastieLogger.debug(
           JSON.stringify(
             {
               created_at,
@@ -41,7 +47,7 @@ export default class BeastieTwitterClient {
     this.say(msg);
   };
 
-  public postMessage = async discordMsg => {
+  public postMessage = discordMsg => {
     const msg = `${discordMsg} #teamTALIMA #bot`;
     this.say(msg);
   };

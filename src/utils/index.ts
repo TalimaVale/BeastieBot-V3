@@ -3,6 +3,18 @@ import config from "../config";
 import { awesomenessInterval } from "./values";
 import dynamoDB from "../services/db";
 import { createTeammateTable } from "../services/db/createTable";
+import { BeastieLogger } from "./Logging";
+
+function CallTwitchApi(uri, options) {
+  options = options || {};
+  options.headers = {
+    "Client-ID": `${config.CLIENT_ID}`,
+    Authorization: `Bearer ${config.BROADCASTER_OAUTH}`
+  };
+  options.json = true;
+  options.uri = uri;
+  return rp(options);
+}
 
 export const isGuildMaster = name => {
   return name === config.DISCORD_GUILD_MASTER_USERNAME;
@@ -13,47 +25,47 @@ export const isBroadcaster = name => {
 };
 
 const getUser = async username => {
-  username = username.toLowerCase();
-
-  const userArray = await rp({
-    uri: "https://api.twitch.tv/helix/users",
-    qs: { login: username },
-    headers: {
-      "Client-ID": `${config.CLIENT_ID}`,
-      Authorization: `Bearer ${config.BROADCASTER_OAUTH}`
-    },
-    json: true
+  return CallTwitchApi("https://api.twitch.tv/helix/users", {
+    qs: { login: username.toLowerCase() }
   });
-  return userArray;
 };
 
 export const getBroadcasterId = async () => {
-  const userArray = await getUser(config.BROADCASTER_USERNAME);
-  return userArray.data[0].id;
+  try {
+    const userArray = await getUser(config.BROADCASTER_USERNAME);
+    return userArray.data[0].id;
+  } catch (e) {
+    BeastieLogger.warn(
+      `Failed to get broadcaster id for ${config.BROADCASTER_USERNAME}: ${e}`
+    );
+    return 0;
+  }
 };
 
 export const getBroadcasterDisplayName = async () => {
-  const userArray = await getUser(config.BROADCASTER_USERNAME);
-  return userArray.data[0].display_name;
+  try {
+    const userArray = await getUser(config.BROADCASTER_USERNAME);
+    return userArray.data[0].display_name;
+  } catch (e) {
+    BeastieLogger.warn(
+      `Failed to get broadcaster id for ${config.BROADCASTER_USERNAME}: ${e}`
+    );
+    return 0;
+  }
 };
 
 const getBroadcasterStream = async broadcasterID => {
-  const stream = await rp({
-    uri: `https://api.twitch.tv/helix/streams?first=1&user_id=${broadcasterID}`,
-    headers: {
-      "Client-ID": config.CLIENT_ID,
-      Authorization: `Bearer ${config.BROADCASTER_OAUTH}`
-    },
-    json: true
-  });
-  return stream;
+  return CallTwitchApi(
+    `https://api.twitch.tv/helix/streams?first=1&user_id=${broadcasterID}`,
+    {}
+  );
 };
 
 export const initStream = async () => {
   const broadcasterID = await getBroadcasterId();
   const stream = await getBroadcasterStream(broadcasterID);
 
-  const live = stream.data[0] && stream.data[0].type === "live" ? true : false;
+  const live = stream.data[0] && stream.data[0].type === "live";
   const id = stream.data[0] && stream.data[0].id;
 
   return { live, id };
@@ -96,16 +108,10 @@ const requestReadAwesomeness = id => ({
 });
 
 const getChatroomViewers = async () => {
-  const { chatters = {} } = await rp({
-    uri: `https://tmi.twitch.tv/group/user/${
-      config.BROADCASTER_USERNAME
-    }/chatters`,
-    headers: {
-      "Client-ID": config.CLIENT_ID,
-      Authorization: `Bearer ${config.BROADCASTER_OAUTH}`
-    },
-    json: true
-  });
+  const { chatters = {} } = await CallTwitchApi(
+    `https://tmi.twitch.tv/group/user/${config.BROADCASTER_USERNAME}/chatters`,
+    {}
+  );
 
   const usernames = Object.values(chatters).flat();
 
@@ -123,14 +129,10 @@ const getChatroomViewers = async () => {
 
   let viewers = [];
   for (const query of userIdQueryStrings) {
-    const { data: profiles = [] } = await rp({
-      uri: `https://api.twitch.tv/helix/users?${query}`,
-      headers: {
-        "Client-ID": config.CLIENT_ID,
-        Authorization: `Bearer ${config.BROADCASTER_OAUTH}`
-      },
-      json: true
-    });
+    const { data: profiles = [] } = await CallTwitchApi(
+      `https://api.twitch.tv/helix/users?${query}`,
+      {}
+    );
 
     viewers.push(...profiles.map(({ id, login: username }) => [id, username]));
   }
@@ -144,70 +146,100 @@ const checkDatabaseTables = async table => {
 };
 
 const checkTeammateTable = async () => {
-  const teammateTableExists = await checkDatabaseTables(
-    config.DATABASE_TEAMMATE_TABLE
-  );
-
-  if (!teammateTableExists) await createTeammateTable(dynamoDB);
+  if (!(await checkDatabaseTables(config.DATABASE_TEAMMATE_TABLE))) {
+    await createTeammateTable(dynamoDB);
+  }
 };
 
 export const readAwesomeness = async (user, displayName) => {
-  checkTeammateTable();
+  try {
+    await checkTeammateTable();
+  } catch (e) {
+    BeastieLogger.error(`Failed to check teammate table ${e}`);
+    return;
+  }
 
   const { data } = await getUser(user);
 
-  if (data[0]) {
-    const { id, display_name: userDisplayName } = data[0];
+  if (!data[0]) {
+    return `I cannot find that username...`;
+  }
 
+  const { id, display_name: userDisplayName } = data[0];
+
+  try {
     const dbItem: any = await dynamoDB
       .getItem(requestReadAwesomeness(id))
       .promise();
+    if (!dbItem.Item) {
+      return `I cannot find that teammate...`;
+    }
 
-    if (dbItem.Item) {
-      const awesomeness = dbItem.Item.awesomeness.N;
-      const userRead =
-        userDisplayName === displayName ? `You have` : `${userDisplayName} has`;
+    const awesomeness = dbItem.Item.awesomeness.N;
+    const userRead =
+      userDisplayName === displayName ? `You have` : `${userDisplayName} has`;
 
-      return `${displayName}, ${userRead} ${awesomeness} awesomeness`;
-    } else return `I cannot find that teammate...`;
-  } else return `I cannot find that username...`;
+    return `${displayName}, ${userRead} ${awesomeness} awesomeness`;
+  } catch (e) {
+    BeastieLogger.error(`Failed to fetch awesomeness from db: ${e}`);
+    return `Sorry, server error`;
+  }
 };
 
 export const updateTeammateAwesomeness = async (user, amount) => {
-  checkTeammateTable();
+  try {
+    await checkTeammateTable();
+  } catch (e) {
+    BeastieLogger.error(`Failed to check teammate table ${e}`);
+    return `Had issue checking the TeammateTable`;
+  }
 
   const { data } = await getUser(user);
 
-  if (data[0]) {
-    const { id, login: username, display_name: displayName } = data[0];
+  if (!data[0]) {
+    return `I cannot find that username...`;
+  }
 
-    await dynamoDB
-      .updateItem(requestAddAwesomeness(id, username, amount))
-      .promise();
+  const { id, login: username, display_name: displayName } = data[0];
 
-    console.log(`AWESOMENESS: ${displayName} received ${amount} awesomeness`);
-    return `Awarded ${displayName} ${amount} Awesomeness!`;
-  } else return `I cannot find that username...`;
+  await dynamoDB
+    .updateItem(requestAddAwesomeness(id, username, amount))
+    .promise();
+
+  BeastieLogger.info(
+    `AWESOMENESS: ${displayName} received ${amount} awesomeness`
+  );
+  return `Awarded ${displayName} ${amount} Awesomeness!`;
 };
 
 export const updateChattersAwesomeness = async amount => {
-  checkTeammateTable();
+  try {
+    await checkTeammateTable();
+  } catch (e) {
+    BeastieLogger.error(`Failed to check teammate table ${e}`);
+    return;
+  }
 
   const viewers = await getChatroomViewers();
-  console.log(viewers);
+  BeastieLogger.debug(viewers);
 
-  if (viewers) {
-    await Promise.all(
-      viewers.map(([id, username]) =>
-        dynamoDB
-          .updateItem(requestAddAwesomeness(id, username, amount))
-          .promise()
-      )
-    );
+  if (!viewers) {
+    return `Cannot find viewers...`;
+  }
 
-    console.log(
-      `AWESOMENESS: ${viewers.length} teammates received ${amount} awesomeness`
-    );
-    return `Awarded ${amount} Awesomeness to all stream viewers!`;
-  } else return `Cannot find viewers...`;
+  await Promise.all(
+    viewers.map(([id, username]) =>
+      dynamoDB
+        .updateItem(requestAddAwesomeness(id, username, amount))
+        .promise()
+        .catch(e => BeastieLogger.error(`Database error: ${e}`))
+    )
+  ).catch(e => {
+    BeastieLogger.warn(`updateChattersAwesomeness updateDB item failed: ${e}`);
+  });
+
+  BeastieLogger.info(
+    `AWESOMENESS: ${viewers.length} teammates received ${amount} awesomeness`
+  );
+  return `Awarded ${amount} Awesomeness to all stream viewers!`;
 };
