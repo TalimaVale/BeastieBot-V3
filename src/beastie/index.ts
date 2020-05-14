@@ -34,7 +34,7 @@ export default class BeastieBot {
 
     beastie.twitchClient = beastie.initTwitch();
     beastie.broadcasterId = await getBroadcasterId();
-    beastie.twitchWebhooks = beastie.initTwitchWebhooks();
+    //beastie.twitchWebhooks = beastie.initTwitchWebhooks();
     beastie.discordClient = beastie.initDiscord();
     beastie.twitterClient = beastie.initTwitter();
 
@@ -91,7 +91,7 @@ export default class BeastieBot {
       this.onDiscordMessage(message);
     });
 
-    console.log(`discord init finished`);
+    console.log("discord init finished");
     return discordClient;
   }
 

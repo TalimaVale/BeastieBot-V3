@@ -68,6 +68,7 @@ export default class BeastieTwitchService {
     process.on("SIGINT", () => {
       console.log("SHUTTING DOWN ON SIGINT");
       this.onDisconnect();
+      setTimeout(() => process.exit(), 500);
     });
   }
 
@@ -87,7 +88,7 @@ export default class BeastieTwitchService {
 
   public toggleStreamIntervals = live => {
     if (live) {
-      console.log("stream intervals running");
+      console.log("Stream intervals running...");
       if (this.awesomenessInterval === undefined)
         this.awesomenessInterval = setInterval(async () => {
           updateChattersAwesomeness(this.awesomenessIntervalAmount).catch(
@@ -117,6 +118,7 @@ export default class BeastieTwitchService {
     if (message.startsWith("!")) {
       const [command = "!", para1 = "", para2 = ""] = message.split(" ");
       const badges = tags.badges ? Object.keys(tags.badges) : [];
+      if (badges.includes("broadcaster")) badges.push("moderator");
 
       const commandModule = determineCommand(command.slice(1), badges);
       if (commandModule) {

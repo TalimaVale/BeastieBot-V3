@@ -19,7 +19,8 @@ const getUser = async username => {
     uri: "https://api.twitch.tv/helix/users",
     qs: { login: username },
     headers: {
-      "Client-ID": `${config.CLIENT_ID}`
+      "Client-ID": `${config.CLIENT_ID}`,
+      Authorization: `Bearer ${config.BROADCASTER_OAUTH}`
     },
     json: true
   });
@@ -40,7 +41,8 @@ const getBroadcasterStream = async broadcasterID => {
   const stream = await rp({
     uri: `https://api.twitch.tv/helix/streams?first=1&user_id=${broadcasterID}`,
     headers: {
-      "Client-ID": config.CLIENT_ID
+      "Client-ID": config.CLIENT_ID,
+      Authorization: `Bearer ${config.BROADCASTER_OAUTH}`
     },
     json: true
   });
@@ -99,7 +101,8 @@ const getChatroomViewers = async () => {
       config.BROADCASTER_USERNAME
     }/chatters`,
     headers: {
-      "Client-ID": config.CLIENT_ID
+      "Client-ID": config.CLIENT_ID,
+      Authorization: `Bearer ${config.BROADCASTER_OAUTH}`
     },
     json: true
   });
@@ -123,7 +126,8 @@ const getChatroomViewers = async () => {
     const { data: profiles = [] } = await rp({
       uri: `https://api.twitch.tv/helix/users?${query}`,
       headers: {
-        "Client-ID": config.CLIENT_ID
+        "Client-ID": config.CLIENT_ID,
+        Authorization: `Bearer ${config.BROADCASTER_OAUTH}`
       },
       json: true
     });
@@ -204,6 +208,6 @@ export const updateChattersAwesomeness = async amount => {
     console.log(
       `AWESOMENESS: ${viewers.length} teammates received ${amount} awesomeness`
     );
-    return `Awarded ${viewers.length} Awesomeness to all stream viewers!`;
+    return `Awarded ${amount} Awesomeness to all stream viewers!`;
   } else return `Cannot find viewers...`;
 };

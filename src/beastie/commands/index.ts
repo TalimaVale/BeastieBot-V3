@@ -1,15 +1,15 @@
 // import { startRaidTeam, joinRaidTeam } from "./raid";
-const commandModules = [
-  require("./greetings"),
+export const commandModules = [
+  require("./hello"),
   require("./rawr"),
   require("./awesomeness/awesomeness"),
   require("./informational/about"),
   require("./informational/discord"),
   require("./informational/twitch")
 ];
-const subscriberCommandModules = [];
-const moderatorCommandModules = [];
-const broadcasterCommandModules = [
+export const subscriberCommandModules = [];
+export const moderatorCommandModules = [require("./utils/alias")];
+export const broadcasterCommandModules = [
   require("./awesomeness/bonusall"),
   require("./awesomeness/bonus")
 ];

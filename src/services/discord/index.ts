@@ -31,12 +31,12 @@ export default class BeastieDiscordClient {
 
     this.client.on("disconnect", () => {
       console.log("BEASTIE HAS BEEN DISCONNECTED FROM DISCORD");
-      this.onDisconnect();
+      //this.onDisconnect();
     });
 
     process.on("SIGINT", () => {
       console.log("SHUTTING DOWN ON SIGINT");
-      this.onDisconnect();
+      //this.onDisconnect();
     });
   }
 

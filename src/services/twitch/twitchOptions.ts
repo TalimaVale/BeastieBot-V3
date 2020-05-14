@@ -10,7 +10,7 @@ const twitchOptions = {
   },
   identity: {
     username: config.BEASTIE_USERNAME,
-    password: config.BEASTIE_PASSWORD
+    password: `oauth:${config.BEASTIE_OAUTH}`
   },
   channels: [config.BROADCASTER_USERNAME]
 };
