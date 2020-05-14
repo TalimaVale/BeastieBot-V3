@@ -94,14 +94,8 @@ export const hostedChannelGoodbye = `Goodbye Friend! I must go home now. Hope yo
 export const endRaidMessage = `The raid is over! Great raid team, and thanks for participating today! Here's our raid reward! :D`;
 
 // Discord Guild and Channel Names {
-/*export const discordGuild = {
+export const discordGuild = {
   guildName: "teamTALIMA",
   welcomeCh: "general",
   talimasFeedCh: "talimas-feed"
-};*/
-
-export const discordGuild = {
-  guildName: "BotTesting101",
-  welcomeCh: "general",
-  talimasFeedCh: "test"
 };
