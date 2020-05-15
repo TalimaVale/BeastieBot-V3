@@ -5,7 +5,7 @@ import dynamoDB from "../services/db";
 import { createTeammateTable } from "../services/db/createTable";
 import { BeastieLogger } from "./Logging";
 
-function CallTwitchApi(uri, options) {
+function callTwitchApi(uri, options) {
   options = options || {};
   options.headers = {
     "Client-ID": `${config.CLIENT_ID}`,
@@ -25,7 +25,7 @@ export const isBroadcaster = name => {
 };
 
 const getUser = async username => {
-  return CallTwitchApi("https://api.twitch.tv/helix/users", {
+  return callTwitchApi("https://api.twitch.tv/helix/users", {
     qs: { login: username.toLowerCase() }
   });
 };
@@ -55,7 +55,7 @@ export const getBroadcasterDisplayName = async () => {
 };
 
 const getBroadcasterStream = async broadcasterID => {
-  return CallTwitchApi(
+  return callTwitchApi(
     `https://api.twitch.tv/helix/streams?first=1&user_id=${broadcasterID}`,
     {}
   );
@@ -108,7 +108,7 @@ const requestReadAwesomeness = id => ({
 });
 
 const getChatroomViewers = async () => {
-  const { chatters = {} } = await CallTwitchApi(
+  const { chatters = {} } = await callTwitchApi(
     `https://tmi.twitch.tv/group/user/${config.BROADCASTER_USERNAME}/chatters`,
     {}
   );
@@ -129,7 +129,7 @@ const getChatroomViewers = async () => {
 
   let viewers = [];
   for (const query of userIdQueryStrings) {
-    const { data: profiles = [] } = await CallTwitchApi(
+    const { data: profiles = [] } = await callTwitchApi(
       `https://api.twitch.tv/helix/users?${query}`,
       {}
     );
