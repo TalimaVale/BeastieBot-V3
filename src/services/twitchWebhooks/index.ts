@@ -20,7 +20,6 @@ export default class TwitchWebhooksServer {
           .subscribe("streams", {
             user_id: id
           })
-          .then(() => {})
           .catch(reason => {
             BeastieLogger.warn(`subscribeTwitchWebhooks failed: ${reason}`);
           });
