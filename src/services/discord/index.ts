@@ -35,11 +35,11 @@ export default class BeastieDiscordClient {
       BeastieLogger.info("BEASTIE HAS BEEN DISCONNECTED FROM DISCORD");
       await this.onDisconnect();
     });
+  }
 
-    process.on("SIGINT", async () => {
-      BeastieLogger.info("SHUTTING DOWN ON SIGINT");
-      await this.onSIGINT();
-    });
+  public async destroy() {
+    BeastieLogger.info("SHUTTING DOWN ON SIGINT");
+    await this.onSIGINT();
   }
 
   // BeastieDiscordClient Actions
@@ -89,6 +89,7 @@ export default class BeastieDiscordClient {
   private async onSIGINT() {
     try {
       await this.say(this.discordTalimasFeedChId, beastieDisconnectMessage);
+      await this.client.destroy();
     } catch (e) {
       BeastieLogger.warn(`Failed to send shutdown message because ${e}`);
     }

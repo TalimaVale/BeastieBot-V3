@@ -10,6 +10,10 @@ export default class BeastieTwitterClient {
     this.client = new Twitter(twitterOptions);
   }
 
+  public async destroy() {
+    delete this.client;
+  }
+
   private say = msg => {
     this.client.post(
       "statuses/update",

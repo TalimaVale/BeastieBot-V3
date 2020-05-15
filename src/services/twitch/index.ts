@@ -71,11 +71,11 @@ export default class BeastieTwitchService {
       BeastieLogger.info("BEASTIE HAS BEEN DISCONNECTED FROM TWITCH");
       await this.onDisconnect();
     });
+  }
 
-    process.on("SIGINT", async () => {
-      BeastieLogger.info("SHUTTING DOWN ON SIGINT");
-      await this.onDisconnect();
-    });
+  public async destroy() {
+    BeastieLogger.info("SHUTTING DOWN ON SIGINT");
+    await this.onSIGINT();
   }
 
   // BeastieTwitchClient Actions
@@ -125,6 +125,11 @@ export default class BeastieTwitchService {
 
   private onDisconnect = async () => {
     await this.say(beastieDisconnectMessage);
+  };
+
+  private onSIGINT = async () => {
+    await this.say(beastieDisconnectMessage);
+    await this.client.disconnect();
   };
 
   private onMessage = async (channel, tags, message) => {
