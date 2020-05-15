@@ -1,5 +1,6 @@
 // import { startRaidTeam, joinRaidTeam } from "./raid";
 export const commandModules = [
+  require("./utils/help"),
   require("./hello"),
   require("./rawr"),
   require("./awesomeness/awesomeness"),
@@ -13,6 +14,29 @@ export const broadcasterCommandModules = [
   require("./awesomeness/bonusall"),
   require("./awesomeness/bonus")
 ];
+
+export function getCommandModules(rank) {
+  let modules = Array.from(commandModules, module => module.command);
+
+  if (!rank) {
+    return modules;
+  }
+
+  if (rank.includes("subscriber") || rank.includes("Beastie"))
+    modules.concat(
+      Array.from(subscriberCommandModules, module => module.command)
+    );
+  if (rank.includes("moderator") || rank.includes("Moderator"))
+    modules.concat(
+      Array.from(moderatorCommandModules, module => module.command)
+    );
+  if (rank.includes("broadcaster") || rank.includes("Talima"))
+    modules.concat(
+      Array.from(broadcasterCommandModules, module => module.command)
+    );
+
+  return modules;
+}
 
 export const determineCommand = (command, rank) => {
   command = command.toLowerCase();

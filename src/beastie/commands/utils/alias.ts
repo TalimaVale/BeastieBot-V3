@@ -1,7 +1,9 @@
-import { commandModules } from "../index";
-import subscriberCommandModules from "../index";
-import moderatorCommandModules from "../index";
-import broadcasterCommandModules from "../index";
+import {
+  commandModules,
+  subscriberCommandModules,
+  moderatorCommandModules,
+  broadcasterCommandModules
+} from "../index";
 
 export const command = "alias";
 
@@ -9,8 +11,13 @@ export const aliases = new Set([]);
 
 export const execute = ({ para1, para2 }) => {
   let commandModule;
+  let allModules = commandModules.concat(
+    subscriberCommandModules,
+    moderatorCommandModules,
+    broadcasterCommandModules
+  );
 
-  for (const module of commandModules) {
+  for (const module of allModules) {
     if (module.command === para2 || module.aliases.has(para2)) {
       return `Command "${para2}" is already defined!`;
     }

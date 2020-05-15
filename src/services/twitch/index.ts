@@ -156,7 +156,8 @@ export default class BeastieTwitchService {
             para1,
             para2,
             username,
-            displayName
+            displayName,
+            roles: badges
           })
         );
 

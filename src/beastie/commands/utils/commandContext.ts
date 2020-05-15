@@ -9,6 +9,7 @@ export default class CommandContext {
 
   username: string;
   displayName: string;
+  roles: string[];
 
   constructor({
     platform = "twitch",
@@ -18,7 +19,8 @@ export default class CommandContext {
     para1 = "",
     para2 = "",
     username = "teammate",
-    displayName = "Teammate"
+    displayName = "Teammate",
+    roles = []
   }) {
     this.platform = platform;
     this.client = client;
@@ -28,5 +30,6 @@ export default class CommandContext {
     this.para2 = para2;
     this.username = username;
     this.displayName = displayName;
+    this.roles = roles;
   }
 }
