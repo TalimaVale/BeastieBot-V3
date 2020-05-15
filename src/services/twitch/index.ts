@@ -75,7 +75,6 @@ export default class BeastieTwitchService {
     process.on("SIGINT", async () => {
       BeastieLogger.info("SHUTTING DOWN ON SIGINT");
       await this.onDisconnect();
-      setTimeout(() => process.exit(), 500);
     });
   }
 
