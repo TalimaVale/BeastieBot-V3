@@ -23,15 +23,15 @@ export function getCommandModules(rank) {
   }
 
   if (rank.includes("subscriber") || rank.includes("Beastie"))
-    modules.concat(
+    modules = modules.concat(
       Array.from(subscriberCommandModules, module => module.command)
     );
   if (rank.includes("moderator") || rank.includes("Moderator"))
-    modules.concat(
+    modules = modules.concat(
       Array.from(moderatorCommandModules, module => module.command)
     );
   if (rank.includes("broadcaster") || rank.includes("Talima"))
-    modules.concat(
+    modules = modules.concat(
       Array.from(broadcasterCommandModules, module => module.command)
     );
 
