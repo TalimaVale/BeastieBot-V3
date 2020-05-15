@@ -1,4 +1,4 @@
-import Discord from "discord.js";
+import Discord, { TextChannel, Message, GuildMember } from "discord.js";
 import CommandContext from "../../beastie/commands/utils/commandContext";
 import determineCommand from "../../beastie/commands";
 import { handleDiscordReady } from "./ready";
@@ -23,11 +23,11 @@ export default class BeastieDiscordClient {
       BeastieLogger.debug(`I am so ready!!`);
     });
 
-    this.client.on("message", async message => {
+    this.client.on("message", async (message: Message) => {
       await this.onMessage(message);
     });
 
-    this.client.on("guildMemberAdd", async member => {
+    this.client.on("guildMemberAdd", async (member: GuildMember) => {
       await this.onGuildMemberAdd(member);
     });
 
@@ -44,10 +44,21 @@ export default class BeastieDiscordClient {
 
   // BeastieDiscordClient Actions
   private say = async (channelId, msg) => {
-    let channel = this.client.channels.get(channelId) as Discord.TextChannel;
-    if (!channel) {
-      BeastieLogger.warn(`Do not have access to this channel ${channelId}`);
-      return;
+    let channel: TextChannel;
+    try {
+      channel = (await this.client.channels.cache.get(
+        channelId
+      )) as TextChannel;
+      if (!channel) {
+        BeastieLogger.warn(`Do not have access to this channel ${channelId}`);
+        return;
+      }
+    } catch (e) {
+      BeastieLogger.warn(
+        `Failed to send discord message to channel ${channelId}: ${JSON.stringify(
+          e
+        )}`
+      );
     }
 
     if (Array.isArray(msg)) {
@@ -114,48 +125,47 @@ export default class BeastieDiscordClient {
     }
   }
 
-  private onMessage = async ({ content: message, author, member, channel }) => {
-    if (!message.startsWith("!")) return;
+  private onMessage = async (message: Message) => {
+    if (!message.content.startsWith("!")) return;
 
-    const [command = "!", para1 = "", para2 = ""] = message.split(" ");
-    const roles = member.roles.map(role => role.name);
+    const [command = "!", para1 = "", para2 = ""] = message.content.split(" ");
+    const guild = this.client.guilds.cache.get(message.guild.id);
+    const guildMember: GuildMember = guild.members.cache.get(message.author.id);
+    const roles = guildMember.roles.cache.map(role => role.name);
 
     const commandModule = determineCommand(command.slice(1), roles);
-    if (commandModule) {
-      const platform = "discord";
-      const client = this.client;
-      const username = author.tag;
-      const displayName = author.toString();
+    if (!commandModule) {
+      return;
+    }
 
-      try {
-        const response = await commandModule.execute(
-          new CommandContext({
-            platform,
-            client,
-            message,
-            command,
-            para1,
-            para2,
-            username,
-            displayName,
-            roles
-          })
-        );
+    try {
+      const response = await commandModule.execute(
+        new CommandContext({
+          platform: "discord",
+          client: this.client,
+          message: message.content,
+          command,
+          para1,
+          para2,
+          username: message.author.tag,
+          displayName: message.author.toString(),
+          roles
+        })
+      );
 
-        if (response) {
-          await this.say(channel.id, response);
-        }
-      } catch (e) {
-        BeastieLogger.warn(`Failed to execute command: ${e}`);
+      if (response) {
+        await this.say(message.channel.id, response);
       }
+    } catch (e) {
+      BeastieLogger.warn(`Failed to execute command: ${e}`);
     }
   };
 
-  private onGuildMemberAdd = async member => {
+  private onGuildMemberAdd = async (member: GuildMember) => {
     try {
       const msg = await discordPosts(
         POST_EVENT.DISCORD_MEMBER_ADD,
-        member.user
+        member.user.toString()
       );
       await this.say(this.discordWelcomeChId, msg);
     } catch (e) {

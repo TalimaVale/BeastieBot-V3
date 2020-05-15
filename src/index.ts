@@ -28,7 +28,7 @@ Beastie.create()
             BeastieLogger.warn(
               "Beastie took too long to shut down, killing process"
             );
-            process.exit(3);
+            process.exit(4);
           }, 1000 * 5);
           try {
             await beastie.destroy();
@@ -36,6 +36,7 @@ Beastie.create()
             BeastieLogger.error(
               `Beastie failed during shutdown  ${JSON.stringify(e)}`
             );
+            process.exit(3);
           }
           clearTimeout(timeoutId);
         });

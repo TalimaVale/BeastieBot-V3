@@ -17,7 +17,7 @@
   "dependencies": {
     "aws-sdk": "^2.562.0",
     "bluebird": "^3.5.5",
-    "discord.js": "^11.5.1",
+    "discord.js": "^12.2.0",
     "dotenv": "^8.0.0",
     "request-promise": "^4.2.4",
     "source-map-support": "^0.5.12",

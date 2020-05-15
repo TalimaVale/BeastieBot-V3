@@ -186,6 +186,8 @@ export default class BeastieBot {
 
   private onDiscordMessage = message => {
     if (message.channel.id === this.discordClient.discordTalimasFeedChId)
-      this.twitterClient.postMessage(message);
+      if (this.twitterClient) {
+        this.twitterClient.postMessage(message);
+      }
   };
 }
