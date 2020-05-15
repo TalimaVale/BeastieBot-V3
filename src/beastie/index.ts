@@ -124,10 +124,14 @@ export default class BeastieBot {
       this.twitterClient
         .post(POST_EVENT.LIVE, this.state.curStreamId)
         .catch(reason => {
-          BeastieLogger.warn(`Failed to post twitter event live: ${reason}`);
+          BeastieLogger.warn(
+            `Failed to complete twitter POST_EVENT.LIVE: ${reason}`
+          );
         });
       this.discordClient.post(POST_EVENT.LIVE).catch(reason => {
-        BeastieLogger.warn(`Failed to post discord event live: ${reason}`);
+        BeastieLogger.warn(
+          `Failed to complete discord POST_EVENT.LIVE: ${reason}`
+        );
       });
     } else if (!this.state.isStreaming) {
       try {
