@@ -39,6 +39,9 @@ Beastie.create()
             process.exit(3);
           }
           clearTimeout(timeoutId);
+
+          // This shouldn't be needed, but just to make extra sure that we terminate
+          process.exit(0);
         });
       })
       .catch(reason => {
