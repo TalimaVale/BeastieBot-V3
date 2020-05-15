@@ -28,7 +28,7 @@ const postHosting = name => {
 };
 
 const postEndOfStream = () => {
-  return `Goodbye, thanks for watching`;
+  return `Goodbye, thanks for watching! :) Check the schedule for the next live stream, and don't forget to join the team Discord! https://discord.gg/eZtrhh7`;
 };
 
 /*const postFollows5 = () => {
