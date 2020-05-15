@@ -131,8 +131,8 @@ export default class BeastieTwitchService {
     if (!message.startsWith("!")) {
       if (this.activeRaid && this.hostedChannel !== "") {
         checkForRaidMessage(this, channel, tags, message);
-        return;
       }
+      return;
     }
     const [command = "!", para1 = "", para2 = ""] = message.split(" ");
     const badges = tags.badges ? Object.keys(tags.badges) : [];
@@ -170,6 +170,7 @@ export default class BeastieTwitchService {
   private onHosting = async (target, viewers) => {
     if (!this.activeRaid) {
       await this.post(POST_EVENT.TWITCH_HOSTING, target);
+      return;
     }
 
     const startResponse = startRaiding(this, target, viewers);
