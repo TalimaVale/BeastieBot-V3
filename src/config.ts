@@ -18,6 +18,9 @@ interface Config {
   TWITTER_ACCESS_TOKEN_KEY: string;
   TWITTER_ACCESS_TOKEN_SECRET: string;
   LOG_LEVEL: string;
+  DISCORD_GUILD_NAME: string;
+  DISCORD_WELCOME_CHANNEL: string;
+  DISCORD_FEED_CHANNEL: string;
 }
 
 const config = yup.object().shape({
@@ -40,7 +43,10 @@ const config = yup.object().shape({
   TWITTER_CONSUMER_SECRET: yup.string().required(),
   TWITTER_ACCESS_TOKEN_KEY: yup.string().required(),
   TWITTER_ACCESS_TOKEN_SECRET: yup.string().required(),
-  LOG_LEVEL: yup.string().required()
+  LOG_LEVEL: yup.string().required(),
+  DISCORD_GUILD_NAME: yup.string().required(),
+  DISCORD_WELCOME_CHANNEL: yup.string().required(),
+  DISCORD_FEED_CHANNEL: yup.string().required()
 });
 
 export default <Config>config.validateSync(process.env, { stripUnknown: true });

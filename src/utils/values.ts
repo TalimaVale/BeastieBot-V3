@@ -92,10 +92,3 @@ export const hostedChannelGreeting = viewers =>
   `Hello Friend! I am BeastieBot and you are being raided by myself and ${viewers} teammates of teamTALIMA! RAWR`;
 export const hostedChannelGoodbye = `Goodbye Friend! I must go home now. Hope you have an awesome stream! :)`;
 export const endRaidMessage = `The raid is over! Great raid team, and thanks for participating today! Here's our raid reward! :D`;
-
-// Discord Guild and Channel Names {
-export const discordGuild = {
-  guildName: "teamTALIMA",
-  welcomeCh: "general",
-  talimasFeedCh: "talimas-feed"
-};
