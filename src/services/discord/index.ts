@@ -147,8 +147,8 @@ export default class BeastieDiscordClient {
           command,
           para1,
           para2,
-          username: message.author.tag,
-          displayName: message.author.toString(),
+          username: message.author.username + message.author.discriminator,
+          displayName: message.author.username,
           roles
         })
       );

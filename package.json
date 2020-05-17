@@ -15,11 +15,11 @@
     "watch-ts": "tsc -w"
   },
   "dependencies": {
-    "aws-sdk": "^2.562.0",
-    "bluebird": "^3.5.5",
+    "aws-sdk": "^2.678.0",
     "discord.js": "^12.2.0",
     "dotenv": "^8.0.0",
-    "request-promise": "^4.2.4",
+    "request": "^2.88.2",
+    "request-promise-native": "^1.0.8",
     "source-map-support": "^0.5.12",
     "tmi.js": "^1.5.0",
     "twitch-webhook": "^1.2.4",
@@ -28,14 +28,9 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {
-    "@babel/cli": "^7.6.4",
-    "@babel/core": "^7.6.4",
-    "@babel/node": "^7.6.3",
-    "@babel/preset-env": "^7.6.3",
-    "@types/bluebird": "^3.5.27",
     "@types/dotenv": "^6.1.1",
     "@types/node": "^12.0.6",
-    "@types/request-promise": "^4.1.46",
+    "@types/request-promise-native": "^1.0.17",
     "@types/tmi.js": "^1.4.0",
     "@types/twitter": "^1.7.0",
     "@types/yup": "^0.26.14",
@@ -45,6 +40,7 @@
     "prettier": "^1.17.1",
     "pretty-quick": "^1.11.0",
     "ramda": "^0.26.1",
-    "typescript": "^3.9.2"
+    "typescript": "^3.9.2",
+    "yarn": "^1.22.4"
   }
 }
