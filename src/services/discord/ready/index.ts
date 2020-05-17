@@ -1,7 +1,7 @@
 import { discordGuild } from "../../../utils/values";
 
 export const handleDiscordReady = discordClient => {
-  const guild = discordClient.guilds.find(
+  const guild = discordClient.guilds.cache.find(
     g => g.name === discordGuild.guildName
   );
   if (!guild) {
@@ -12,14 +12,14 @@ export const handleDiscordReady = discordClient => {
   const discordGuildId = guild.id;
 
   // get welcome channel
-  const discordWelcomeChId = discordClient.guilds
-    .get(discordGuildId)
-    .channels.find(ch => ch.name === discordGuild.welcomeCh).id;
+  const discordWelcomeChId = guild.channels.cache.find(
+    ch => ch.name === discordGuild.welcomeCh
+  ).id;
 
   // get talimas-feed channel
-  const discordTalimasFeedChId = discordClient.guilds
-    .get(discordGuildId)
-    .channels.find(ch => ch.name === discordGuild.talimasFeedCh).id;
+  const discordTalimasFeedChId = guild.channels.cache.find(
+    ch => ch.name === discordGuild.talimasFeedCh
+  ).id;
 
   return { discordGuildId, discordWelcomeChId, discordTalimasFeedChId };
 };

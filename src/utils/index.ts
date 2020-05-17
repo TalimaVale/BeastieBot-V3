@@ -107,13 +107,31 @@ const requestReadAwesomeness = id => ({
   TableName: config.DATABASE_TEAMMATE_TABLE
 });
 
-const getChatroomViewers = async () => {
-  const { chatters = {} } = await callTwitchApi(
-    `https://tmi.twitch.tv/group/user/${config.BROADCASTER_USERNAME}/chatters`,
-    {}
-  );
+interface ChattersData {
+  broadcaster?: string[];
+  vips?: string[];
+  moderators: string[];
+  staff: string[];
+  admins: string[];
+  global_mods: string[];
+  viewers: string[];
+}
 
-  const usernames = Object.values(chatters).flat();
+const getChatroomViewers = async () => {
+  let chatters: ChattersData;
+  try {
+    chatters = await callTwitchApi(
+      `https://tmi.twitch.tv/group/user/${
+        config.BROADCASTER_USERNAME
+      }/chatters`,
+      {}
+    );
+  } catch (e) {
+    BeastieLogger.warn(`Failed to get chatroom viewers: ${e}`);
+    return [];
+  }
+
+  const usernames: string[] = Object.values(chatters).flat();
 
   const arraysOfUsernames = usernames
     .reduce(
