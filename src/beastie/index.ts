@@ -45,6 +45,24 @@ export default class BeastieBot {
     return beastie;
   }
 
+  async destroy() {
+    let results = await Promise.allSettled([
+      this.twitchClient.destroy(),
+      this.discordClient.destroy(),
+      this.twitterClient.destroy()
+    ]);
+    let rejResult = results.find(
+      rsp => rsp.status === "rejected"
+    ) as PromiseRejectedResult;
+    if (rejResult) {
+      throw rejResult.reason;
+    }
+
+    delete this.twitchClient;
+    delete this.discordClient;
+    delete this.twitterClient;
+  }
+
   initTwitch() {
     const twitchClient = new BeastieTwitchClient();
 
@@ -168,6 +186,8 @@ export default class BeastieBot {
 
   private onDiscordMessage = message => {
     if (message.channel.id === this.discordClient.discordTalimasFeedChId)
-      this.twitterClient.postMessage(message);
+      if (this.twitterClient) {
+        this.twitterClient.postMessage(message);
+      }
   };
 }
