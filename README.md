@@ -11,6 +11,33 @@ The New Beastie is here!
 - [Yup](https://github.com/jquense/yup) for environment variable validation.
 - [Prettier](https://prettier.io/) for code automagic code formatting.
 
+**Setting up the development environment**:
+
+- bot acc = account you want the bot to use when chatting
+- broadcast acc = account you use when you stream
+
+0. Copy .env.example to .env
+1. Create a twitch account for your bot, if you do not want it to use your broadcaster acc.
+2. Go to https://dev.twitch.tv/console/apps and create a new application.
+3. Set Name to whatever you want to call your bot, OAuth redirect to `http://localhost` and category to "Chat bot".
+4. Copy your Client ID and Client Secret into the corresponding fields in the .env
+5. Go to https://twitchapps.com/tmi and generate an oauth for your bot acc.
+6. Set the username and oauth of the bot acc in `BEASTIE_USERNAME` and `BEASTIE_OAUTH` without the `oauth:` respectively.
+7. Replace `<YourClientId>` with your Client Id and follow the link in your browser to create a token for your broadcasting acc
+   ```
+   https://id.twitch.tv/oauth2/authorize?client_id=<YourClientId>&redirect_uri=http://localhost&response_type=token&scope=chat:read+chat:edit+channel:moderate+whispers:read+whispers:edit+channel_editor
+   ```
+8. Copy the token from the redirect url after you have authorized and paste into `BROADCASTER_OAUTH` along with your username in the `BROADCASTER_USERNAME` field.
+9. Go to https://discord.com/developers/applications and create a new application
+10. Go to Bot and click "Add Bot" and copy the token into the `DISCORD_TOKEN` field.
+11. Go to OAuth2 and set redirect url to `http://localhost` and scope to `bot`.
+12. Set the permissions as needed (admin is most practical for dev). Copy the URL under `scopes` and add the bot to your server
+13. Go to General Information and grab the client id and secret and add them to your .env
+14. Ignore `DISCORD_GUILD_NAME` & `DISCORD_GUILD_MASTER_USERNAME` for now as they aren't used
+15. Set all `TWITTER` & `SPOTIFY` values to `no` as they aren't currently needed.
+16. Run yarn install in the root folder, if you do not have yarn installed you can run npm install followed by yarn install
+    0 You are set up and ready to start developing!
+
 **Usage:**
 
 Start development: `yarn watch`
