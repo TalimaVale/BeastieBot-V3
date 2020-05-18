@@ -1,9 +1,7 @@
 import rp from "request-promise";
 import config from "../config";
-import { awesomenessInterval } from "./values";
-import dynamoDB from "../services/db";
-import { createTeammateTable } from "../services/db/createTable";
 import { BeastieLogger } from "./Logging";
+import { getAwesomeness, updateAwesomeness } from "../services/db";
 
 function callTwitchApi(uri, options) {
   options = options || {};
@@ -71,42 +69,6 @@ export const initStream = async () => {
   return { live, id };
 };
 
-const requestAddAwesomeness = (id, username, amount) => ({
-  Key: {
-    twitchUserId: {
-      S: id
-    }
-  },
-  TableName: config.DATABASE_TEAMMATE_TABLE,
-  ExpressionAttributeNames: {
-    "#A": "awesomeness",
-    "#UN": "username",
-    "#WT": "watchTime"
-  },
-  ExpressionAttributeValues: {
-    ":A": {
-      N: `${amount}`
-    },
-    ":UN": {
-      S: username
-    },
-    ":WT": {
-      N: `${awesomenessInterval / 60 / 1000}`
-    }
-  },
-  UpdateExpression: "ADD #A :A, #WT :WT SET #UN = :UN",
-  ReturnValues: "ALL_NEW"
-});
-
-const requestReadAwesomeness = id => ({
-  Key: {
-    twitchUserId: {
-      S: id
-    }
-  },
-  TableName: config.DATABASE_TEAMMATE_TABLE
-});
-
 interface ChattersData {
   broadcaster?: string[];
   vips?: string[];
@@ -164,25 +126,16 @@ const getChatroomViewers = async (): Promise<string[]> => {
   return viewers;
 };
 
-const checkDatabaseTables = async table => {
-  const { TableNames = [] } = await dynamoDB.listTables().promise();
-  return TableNames.includes(table);
-};
-
-const checkTeammateTable = async () => {
-  if (!(await checkDatabaseTables(config.DATABASE_TEAMMATE_TABLE))) {
-    await createTeammateTable(dynamoDB);
+export const readAwesomenessFromId = async (userId, displayName) => {
+  const awesomeness = getAwesomeness(userId);
+  if (!awesomeness) {
+    return `I cannot find that teammate...`;
   }
+
+  return `${displayName}, You have ${awesomeness} awesomeness`;
 };
 
 export const readAwesomeness = async (user, displayName) => {
-  try {
-    await checkTeammateTable();
-  } catch (e) {
-    BeastieLogger.error(`Failed to check teammate table ${e}`);
-    return;
-  }
-
   const { data } = await getUser(user);
 
   if (!data[0]) {
@@ -191,33 +144,18 @@ export const readAwesomeness = async (user, displayName) => {
 
   const { id, display_name: userDisplayName } = data[0];
 
-  try {
-    const dbItem: any = await dynamoDB
-      .getItem(requestReadAwesomeness(id))
-      .promise();
-    if (!dbItem.Item) {
-      return `I cannot find that teammate...`;
-    }
-
-    const awesomeness = dbItem.Item.awesomeness.N;
-    const userRead =
-      userDisplayName === displayName ? `You have` : `${userDisplayName} has`;
-
-    return `${displayName}, ${userRead} ${awesomeness} awesomeness`;
-  } catch (e) {
-    BeastieLogger.error(`Failed to fetch awesomeness from db: ${e}`);
-    return `Sorry, server error`;
+  const awesomeness = getAwesomeness(id);
+  if (!awesomeness) {
+    return `I cannot find that teammate...`;
   }
+
+  const userRead =
+    userDisplayName === displayName ? `You have` : `${userDisplayName} has`;
+
+  return `${displayName}, ${userRead} ${awesomeness} awesomeness`;
 };
 
 export const updateTeammateAwesomeness = async (user, amount) => {
-  try {
-    await checkTeammateTable();
-  } catch (e) {
-    BeastieLogger.error(`Failed to check teammate table ${e}`);
-    return `Had issue checking the TeammateTable`;
-  }
-
   const { data } = await getUser(user);
 
   if (!data[0]) {
@@ -226,9 +164,9 @@ export const updateTeammateAwesomeness = async (user, amount) => {
 
   const { id, login: username, display_name: displayName } = data[0];
 
-  await dynamoDB
-    .updateItem(requestAddAwesomeness(id, username, amount))
-    .promise();
+  if (!(await updateAwesomeness(id, username, displayName))) {
+    return `I failed to update the awesomeness :(`;
+  }
 
   BeastieLogger.info(
     `AWESOMENESS: ${displayName} received ${amount} awesomeness`
@@ -237,13 +175,6 @@ export const updateTeammateAwesomeness = async (user, amount) => {
 };
 
 export const updateChattersAwesomeness = async amount => {
-  try {
-    await checkTeammateTable();
-  } catch (e) {
-    BeastieLogger.error(`Failed to check teammate table ${e}`);
-    return;
-  }
-
   let viewers: string[];
   try {
     viewers = await getChatroomViewers();
@@ -257,16 +188,9 @@ export const updateChattersAwesomeness = async amount => {
     return `Cannot find viewers...`;
   }
 
-  await Promise.all(
-    viewers.map(([id, username]) =>
-      dynamoDB
-        .updateItem(requestAddAwesomeness(id, username, amount))
-        .promise()
-        .catch(e => BeastieLogger.error(`Database error: ${e}`))
-    )
-  ).catch(e => {
-    BeastieLogger.warn(`updateChattersAwesomeness updateDB item failed: ${e}`);
-  });
+  await Promise.allSettled(
+    viewers.map(([id, username]) => updateAwesomeness(id, username, amount))
+  );
 
   BeastieLogger.info(
     `AWESOMENESS: ${viewers.length} teammates received ${amount} awesomeness`
