@@ -117,15 +117,15 @@ interface ChattersData {
   viewers: string[];
 }
 
-const getChatroomViewers = async () => {
+const getChatroomViewers = async (): Promise<string[]> => {
   let chatters: ChattersData;
   try {
-    chatters = await callTwitchApi(
-      `https://tmi.twitch.tv/group/user/${
-        config.BROADCASTER_USERNAME
-      }/chatters`,
-      {}
-    );
+    chatters = (
+      await callTwitchApi(
+        `https://tmi.twitch.tv/group/user/${config.BROADCASTER_USERNAME}/chatters`,
+        {}
+      )
+    ).chatters;
   } catch (e) {
     BeastieLogger.warn(`Failed to get chatroom viewers: ${e}`);
     return [];
@@ -145,14 +145,20 @@ const getChatroomViewers = async () => {
     usernames => `login=${usernames.join("&login=")}`
   );
 
-  let viewers = [];
+  let viewers: string[] = [];
   for (const query of userIdQueryStrings) {
-    const { data: profiles = [] } = await callTwitchApi(
-      `https://api.twitch.tv/helix/users?${query}`,
-      {}
-    );
+    try {
+      const { data: profiles = [] } = await callTwitchApi(
+        `https://api.twitch.tv/helix/users?${query}`,
+        {}
+      );
 
-    viewers.push(...profiles.map(({ id, login: username }) => [id, username]));
+      viewers.push(
+        ...profiles.map(({ id, login: username }) => [id, username])
+      );
+    } catch (e) {
+      BeastieLogger.warn(`Failed to fetch twitch user ${query}`);
+    }
   }
 
   return viewers;
@@ -238,8 +244,14 @@ export const updateChattersAwesomeness = async amount => {
     return;
   }
 
-  const viewers = await getChatroomViewers();
-  BeastieLogger.debug(viewers);
+  let viewers: string[];
+  try {
+    viewers = await getChatroomViewers();
+  } catch (e) {
+    BeastieLogger.warn(`Failed to get chatroom viewers!`);
+    return;
+  }
+  BeastieLogger.debug(`Current viewers: ${viewers}`);
 
   if (!viewers) {
     return `Cannot find viewers...`;

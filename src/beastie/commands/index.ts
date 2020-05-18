@@ -1,4 +1,4 @@
-// import { startRaidTeam, joinRaidTeam } from "./raid";
+import config from "../../config";
 export const commandModules = [
   require("./utils/help"),
   require("./hello"),
@@ -38,7 +38,11 @@ export function getCommandModules(rank) {
   return modules;
 }
 
-export const determineCommand = (command, rank) => {
+export const determineCommand = (
+  command,
+  rank,
+  discordUserId: string = null
+) => {
   command = command.toLowerCase();
 
   let module = commandModules.find(
@@ -52,12 +56,20 @@ export const determineCommand = (command, rank) => {
         module => module.command === command || module.aliases.has(command)
       );
     if (module !== undefined) return module;
-    if (rank.includes("moderator") || rank.includes("Moderator"))
+    if (
+      rank.includes("moderator") ||
+      rank.includes("Moderator") ||
+      discordUserId == config.DISCORD_GUILD_MASTER_ID
+    )
       module = moderatorCommandModules.find(
         module => module.command === command || module.aliases.has(command)
       );
     if (module !== undefined) return module;
-    if (rank.includes("broadcaster") || rank.includes("Talima"))
+    if (
+      rank.includes("broadcaster") ||
+      rank.includes("Talima") ||
+      discordUserId == config.DISCORD_GUILD_MASTER_ID
+    )
       module = broadcasterCommandModules.find(
         module => module.command === command || module.aliases.has(command)
       );

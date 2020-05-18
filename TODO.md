@@ -1,7 +1,8 @@
 # BeastieBot V3
 
 - [x] Update README
-- [ ] Install dynamoDB locally
+- [x] Install dynamoDB locally
+- [x] Add dynamoDB setup instructions to README
 - [ ] Mock discord.js
 - [ ] Mock twitter
 
