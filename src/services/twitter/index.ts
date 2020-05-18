@@ -15,6 +15,9 @@ export default class BeastieTwitterClient {
   }
 
   private say = msg => {
+    if (!this.client) {
+      return;
+    }
     this.client.post(
       "statuses/update",
       {

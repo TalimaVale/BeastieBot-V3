@@ -133,7 +133,11 @@ export default class BeastieDiscordClient {
     const guildMember: GuildMember = guild.members.cache.get(message.author.id);
     const roles = guildMember.roles.cache.map(role => role.name);
 
-    const commandModule = determineCommand(command.slice(1), roles);
+    const commandModule = determineCommand(
+      command.slice(1),
+      roles,
+      guildMember.user.id
+    );
     if (!commandModule) {
       return;
     }

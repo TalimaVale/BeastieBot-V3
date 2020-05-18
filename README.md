@@ -36,8 +36,13 @@ The New Beastie is here!
 1. Set `DISCORD_GUILD_NAME` to the name of the server you want the bot to run in.
 1. Set `DISCORD_WELCOME_CHANNEL`to name of the channel you want the bot to welcome people in
 1. Set `DISCORD_FEED_CHANNEL` to the channel you want to use for having the bot post messages to twitter
+1. Set `DISCORD_GUILD_MASTER_ID` to your discord Id
 1. Run yarn install in the root folder, if you do not have yarn installed you can run npm install followed by yarn install
    0 You are set up and ready to start developing!
+
+**Setting up dynamoDB to run locally:**
+
+- Follow the guide for installation here - https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.DownloadingAndRunning.html
 
 **Usage:**
 
