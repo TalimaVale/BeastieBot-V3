@@ -1,1 +1,10 @@
 * text=auto
+
+*.ts text
+
+*.png binary
+*.jpg binary
+*.gif binary
+*.mp3 binary
+*.mp4 binary
+*.webm binary
