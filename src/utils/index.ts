@@ -144,10 +144,7 @@ export const readAwesomeness = async (user, displayName) => {
 
   const { id, display_name: userDisplayName } = data[0];
 
-  const awesomeness = getAwesomeness(id);
-  if (!awesomeness) {
-    return `I cannot find that teammate...`;
-  }
+  const awesomeness = await getAwesomeness(id);
 
   const userRead =
     userDisplayName === displayName ? `You have` : `${userDisplayName} has`;
@@ -164,7 +161,7 @@ export const updateTeammateAwesomeness = async (user, amount) => {
 
   const { id, login: username, display_name: displayName } = data[0];
 
-  if (!(await updateAwesomeness(id, username, displayName))) {
+  if (!(await updateAwesomeness(id, username, amount))) {
     return `I failed to update the awesomeness :(`;
   }
 

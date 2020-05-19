@@ -1,19 +1,16 @@
-import { getCommandModules } from "../index";
-
-export const command = "help";
-
-export const aliases = new Set(["?", "hlp", "commands", "cmds", "h"]);
+import { getCommandModules, CommandModule } from "../index";
+import CommandContext from "./commandContext";
 
 const maxCommandsPerPage = 5;
 
-export const execute = ({ roles, para1 = 1 }) => {
-  let cmds = getCommandModules(roles);
+const execute = async (context: CommandContext): Promise<string> => {
+  let cmds = getCommandModules(context.roles);
   if (!cmds.length) {
-    return 0;
+    return "";
   }
 
   // -1 to make it easier for users (1-10, easier for most than 0-9)
-  para1 = isNaN(para1) ? 0 : Math.floor(+para1 - 1);
+  let para1 = isNaN(+context.para1) ? 0 : Math.floor(+context.para1 - 1);
 
   const page = Math.max(para1, 0);
   const maxPages = Math.ceil(cmds.length / maxCommandsPerPage);
@@ -23,7 +20,7 @@ export const execute = ({ roles, para1 = 1 }) => {
     return `You only have ${maxPages} pages of help`;
   }
 
-  let commandList = cmds
+  let commandList = Array.from(cmds, (cmd: CommandModule) => cmd.name)
     .slice(startIndex, startIndex + maxCommandsPerPage)
     .join(", ");
   let output = `Commands: ${commandList} - page ${page + 1}/${maxPages}`;
@@ -31,3 +28,10 @@ export const execute = ({ roles, para1 = 1 }) => {
   // Twitch has a max message length of 500 - https://discuss.dev.twitch.tv/t/irc-bot-and-message-lengths/23327
   return output.slice(0, 500);
 };
+
+const cmdModule = new CommandModule(
+  "help",
+  new Set(["?", "hlp", "commands", "cmds", "h"]),
+  execute
+);
+export default cmdModule;

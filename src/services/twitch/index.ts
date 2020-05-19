@@ -2,7 +2,7 @@ import tmi from "tmi.js";
 import twitchOptions from "./twitchOptions";
 import config from "../../config";
 import CommandContext from "../../beastie/commands/utils/commandContext";
-import determineCommand from "../../beastie/commands";
+import { determineCommand, CommandModule } from "../../beastie/commands";
 import { checkForRaidMessage } from "../../beastie/raid";
 import { startRaiding } from "../../beastie/raid";
 import { endRaid } from "../../beastie/raid";
@@ -103,9 +103,10 @@ export default class BeastieTwitchService {
       BeastieLogger.info("Stream intervals running...");
       if (this.awesomenessInterval === undefined)
         this.awesomenessInterval = setInterval(() => {
-          updateChattersAwesomeness(this.awesomenessIntervalAmount).catch(
-            error =>
-              BeastieLogger.error(`updateChattersAwesomeness ERROR ${error}`)
+          updateChattersAwesomeness(
+            this.awesomenessIntervalAmount
+          ).catch(error =>
+            BeastieLogger.error(`updateChattersAwesomeness ERROR ${error}`)
           );
         }, awesomenessInterval);
       if (this.discordInterval === undefined)
@@ -143,24 +144,22 @@ export default class BeastieTwitchService {
     const badges = tags.badges ? Object.keys(tags.badges) : [];
     if (badges.includes("broadcaster")) badges.push("moderator");
 
-    const commandModule = determineCommand(command.slice(1), badges);
+    const commandModule: CommandModule = determineCommand(
+      command.slice(1),
+      badges
+    );
     if (commandModule) {
-      const platform = "twitch";
-      const client = this;
-      const username = tags.username;
-      const displayName = tags["display-name"];
-
       try {
-        const response = await commandModule.execute(
+        const response: string | void = await commandModule.execute(
           new CommandContext({
-            platform,
-            client,
+            platform: "twitch",
+            client: this,
             message,
             command,
             para1,
             para2,
-            username,
-            displayName,
+            username: tags.username,
+            displayName: tags["display-name"],
             roles: badges
           })
         );

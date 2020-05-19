@@ -1,12 +1,16 @@
 import { updateTeammateAwesomeness } from "../../../utils";
 import { BeastieLogger } from "../../../utils/Logging";
+import CommandContext from "../utils/commandContext";
+import { CommandModule } from "../index";
 
-export const command = "bonus";
-
-export const aliases = new Set([]);
-
-export const execute = async ({ para1: username, para2: amount }) => {
-  return await updateTeammateAwesomeness(username, amount).catch(error =>
-    BeastieLogger.warn(`"updateTeammateAwesomeness ERROR ${error}`)
-  );
+const execute = async (context: CommandContext): Promise<string> => {
+  try {
+    return await updateTeammateAwesomeness(context.para1, context.para2);
+  } catch (error) {
+    BeastieLogger.warn(`"updateTeammateAwesomeness ERROR ${error}`);
+  }
+  return "";
 };
+
+const cmdModule = new CommandModule("bonus", new Set([]), execute);
+export default cmdModule;

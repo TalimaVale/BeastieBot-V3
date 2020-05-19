@@ -1,39 +1,52 @@
 import config from "../../config";
-export const commandModules = [
-  require("./utils/help"),
-  require("./hello"),
-  require("./rawr"),
-  require("./awesomeness/awesomeness"),
-  require("./informational/about"),
-  require("./informational/discord"),
-  require("./informational/twitch")
-];
-export const subscriberCommandModules = [];
-export const moderatorCommandModules = [require("./utils/alias")];
-export const broadcasterCommandModules = [
-  require("./awesomeness/bonusall"),
-  require("./awesomeness/bonus")
-];
+import CommandContext from "./utils/commandContext";
 
-export function getCommandModules(rank) {
-  let modules = Array.from(commandModules, module => module.command);
+export class CommandModule {
+  name: string;
+  aliases: Set<string>;
 
-  if (!rank) {
-    return modules;
+  constructor(
+    name: string,
+    aliases: Set<string>,
+    payload: (context: CommandContext) => Promise<string> | Promise<void>
+  ) {
+    this.name = name;
+    this.aliases = aliases;
+    this.execute = payload;
   }
 
+  execute: (context: CommandContext) => Promise<string> | Promise<void>;
+}
+
+export const commandModules: CommandModule[] = [
+  require("./utils/help").default,
+  require("./hello").default,
+  require("./rawr").default,
+  require("./awesomeness/awesomeness").default,
+  require("./informational/about").default,
+  require("./informational/discord").default,
+  require("./informational/twitch").default
+];
+export const subscriberCommandModules: CommandModule[] = [];
+export const moderatorCommandModules: CommandModule[] = [
+  require("./utils/alias").default
+];
+export const broadcasterCommandModules: CommandModule[] = [
+  require("./awesomeness/bonusall").default,
+  require("./awesomeness/bonus").default
+];
+
+export function getCommandModules(rank): CommandModule[] {
+  let modules = Array.from(commandModules);
+
+  if (!rank) return modules;
+
   if (rank.includes("subscriber") || rank.includes("Beastie"))
-    modules = modules.concat(
-      Array.from(subscriberCommandModules, module => module.command)
-    );
+    modules = modules.concat(subscriberCommandModules);
   if (rank.includes("moderator") || rank.includes("Moderator"))
-    modules = modules.concat(
-      Array.from(moderatorCommandModules, module => module.command)
-    );
+    modules = modules.concat(moderatorCommandModules);
   if (rank.includes("broadcaster") || rank.includes("Talima"))
-    modules = modules.concat(
-      Array.from(broadcasterCommandModules, module => module.command)
-    );
+    modules = modules.concat(broadcasterCommandModules);
 
   return modules;
 }
@@ -46,14 +59,14 @@ export const determineCommand = (
   command = command.toLowerCase();
 
   let module = commandModules.find(
-    module => module.command === command || module.aliases.has(command)
+    module => module.name === command || module.aliases.has(command)
   );
   if (module !== undefined) return module;
 
   if (rank) {
     if (rank.includes("subscriber") || rank.includes("Beastie"))
       module = subscriberCommandModules.find(
-        module => module.command === command || module.aliases.has(command)
+        module => module.name === command || module.aliases.has(command)
       );
     if (module !== undefined) return module;
     if (
@@ -62,7 +75,7 @@ export const determineCommand = (
       discordUserId == config.DISCORD_GUILD_MASTER_ID
     )
       module = moderatorCommandModules.find(
-        module => module.command === command || module.aliases.has(command)
+        module => module.name === command || module.aliases.has(command)
       );
     if (module !== undefined) return module;
     if (
@@ -71,7 +84,7 @@ export const determineCommand = (
       discordUserId == config.DISCORD_GUILD_MASTER_ID
     )
       module = broadcasterCommandModules.find(
-        module => module.command === command || module.aliases.has(command)
+        module => module.name === command || module.aliases.has(command)
       );
   }
 

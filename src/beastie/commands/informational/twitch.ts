@@ -1,9 +1,11 @@
-export const command = "twitch";
+import { CommandModule } from "../index";
+import CommandContext from "../utils/commandContext";
 
-export const aliases = new Set([]);
-
-export const execute = ({ platform }) => {
-  return platform === "twitch"
+const execute = async (context: CommandContext): Promise<string> => {
+  return context.platform === "twitch"
     ? `Join the Team Stream! ⠀⠀⠀⠀⠀⠀⠀ => https://twitch.tv/teamTALIMA`
     : `Join the Team Stream!\n=> https://twitch.tv/teamTALIMA`;
 };
+
+const cmdModule = new CommandModule("twitch", new Set([]), execute);
+export default cmdModule;

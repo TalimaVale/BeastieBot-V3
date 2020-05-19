@@ -37,7 +37,11 @@ const createTeammateTable = async (db: DynamoDB) => {
   }
 };
 
-const requestAddAwesomeness = (id, username, amount) => ({
+const requestAddAwesomeness = (
+  id: string,
+  username: string,
+  amount: number
+) => ({
   Key: {
     twitchUserId: {
       S: id
@@ -109,7 +113,7 @@ export const getAwesomeness = async (twitchId): Promise<number> => {
 export const updateAwesomeness = async (
   id,
   username,
-  amount
+  amount: number
 ): Promise<boolean> => {
   try {
     await dynamoDB

@@ -1,18 +1,28 @@
 import { readAwesomeness } from "../../../utils";
 import { BeastieLogger } from "../../../utils/Logging";
+import { CommandModule } from "../index";
+import CommandContext from "../utils/commandContext";
 
-export const command = "awesomeness";
+const execute = async (context: CommandContext): Promise<string> => {
+  const user = context.platform === "twitch" ? context.username : context.para1;
 
-export const aliases = new Set(["points"]);
-
-export const execute = async ({ platform, username, displayName, para1 }) => {
-  const user = platform === "twitch" ? username : para1;
-
-  if (user !== "") {
-    const msg = await readAwesomeness(user, displayName).catch(error =>
-      BeastieLogger.warn(`readAwesomeness ERROR: ${error}`)
-    );
-    return platform === "twitch" ? `@${msg}` : msg;
+  if (user === "") {
+    return `Cannot understand... can you include a username?`;
   }
-  return `Cannot understand... can you include a username?`;
+
+  let msg: string;
+  try {
+    msg = await readAwesomeness(user, context.displayName);
+  } catch (e) {
+    BeastieLogger.warn(`readAwesomeness ERROR: ${e}`);
+    msg = "Could not fetch awesomeness!";
+  }
+  return context.platform === "twitch" ? `@${msg}` : msg;
 };
+
+const cmdModule = new CommandModule(
+  "awesomeness",
+  new Set(["points"]),
+  execute
+);
+export default cmdModule;

@@ -2,34 +2,35 @@ import {
   commandModules,
   subscriberCommandModules,
   moderatorCommandModules,
-  broadcasterCommandModules
+  broadcasterCommandModules,
+  CommandModule
 } from "../index";
+import CommandContext from "./commandContext";
 
-export const command = "alias";
-
-export const aliases = new Set([]);
-
-export const execute = ({ para1, para2 }) => {
-  let commandModule;
-  let allModules = commandModules.concat(
+const execute = async (context: CommandContext): Promise<string> => {
+  let commandModule: CommandModule;
+  let allModules: CommandModule[] = commandModules.concat(
     subscriberCommandModules,
     moderatorCommandModules,
     broadcasterCommandModules
   );
 
   for (const module of allModules) {
-    if (module.command === para2 || module.aliases.has(para2)) {
-      return `Command "${para2}" is already defined!`;
+    if (module.name === context.para2 || module.aliases.has(context.para2)) {
+      return `Command "${context.para2}" is already defined!`;
     }
-    if (module.command === para1 || module.aliases.has(para1)) {
+    if (module.name === context.para1 || module.aliases.has(context.para1)) {
       commandModule = module;
     }
   }
 
   if (commandModule !== undefined) {
-    commandModule.aliases.add(para2);
-    return `Added alias of "${para2}" to ${commandModule.command} command.`;
+    commandModule.aliases.add(context.para2);
+    return `Added alias of "${context.para2}" to ${commandModule.name} command.`;
   } else {
-    return `Could not find "${para1}" command.`;
+    return `Could not find "${context.para1}" command.`;
   }
 };
+
+const cmdModule = new CommandModule("alias", new Set([]), execute);
+export default cmdModule;
