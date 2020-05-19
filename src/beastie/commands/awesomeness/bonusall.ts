@@ -4,6 +4,10 @@ import CommandContext from "../utils/commandContext";
 import { CommandModule } from "../index";
 
 const execute = async (context: CommandContext): Promise<string> => {
+  if (!context.para1) {
+    return "No bonus given :(";
+  }
+
   try {
     return updateChattersAwesomeness(context.para1);
   } catch (error) {
