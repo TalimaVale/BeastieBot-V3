@@ -22,7 +22,7 @@ export default class BeastieBot {
   discordClient: BeastieDiscordClient;
   twitterClient: BeastieTwitterClient;
 
-  broadcasterId: number;
+  broadcasterId: string;
 
   private constructor() {}
 

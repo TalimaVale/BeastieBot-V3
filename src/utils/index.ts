@@ -1,7 +1,7 @@
 import rp from "request-promise";
 import config from "../config";
 import { BeastieLogger } from "./Logging";
-import { getAwesomeness, updateAwesomeness } from "../services/db";
+import { updateAwesomeness } from "../services/db";
 
 function callTwitchApi(uri, options) {
   options = options || {};
@@ -28,16 +28,18 @@ const getUser = async username => {
   });
 };
 
-export const getBroadcasterId = async () => {
+export const getTwitchId = async (username: string): Promise<string> => {
   try {
-    const userArray = await getUser(config.BROADCASTER_USERNAME);
-    return userArray.data[0].id;
+    let user = await getUser(username);
+    return user.data[0].id;
   } catch (e) {
-    BeastieLogger.warn(
-      `Failed to get broadcaster id for ${config.BROADCASTER_USERNAME}: ${e}`
-    );
-    return 0;
+    BeastieLogger.warn(`Failed to get user ${username}'s id: ${e}`);
   }
+  return null;
+};
+
+export const getBroadcasterId = async (): Promise<string> => {
+  return getTwitchId(config.BROADCASTER_USERNAME);
 };
 
 export const getBroadcasterDisplayName = async () => {
@@ -124,32 +126,6 @@ const getChatroomViewers = async (): Promise<string[]> => {
   }
 
   return viewers;
-};
-
-export const readAwesomenessFromId = async (userId, displayName) => {
-  const awesomeness = getAwesomeness(userId);
-  if (!awesomeness) {
-    return `I cannot find that teammate...`;
-  }
-
-  return `${displayName}, You have ${awesomeness} awesomeness`;
-};
-
-export const readAwesomeness = async (user, displayName) => {
-  const { data } = await getUser(user);
-
-  if (!data[0]) {
-    return `I cannot find that username...`;
-  }
-
-  const { id, display_name: userDisplayName } = data[0];
-
-  const awesomeness = await getAwesomeness(id);
-
-  const userRead =
-    userDisplayName === displayName ? `You have` : `${userDisplayName} has`;
-
-  return `${displayName}, ${userRead} ${awesomeness} awesomeness`;
 };
 
 export const updateTeammateAwesomeness = async (user, amount) => {

@@ -5,6 +5,7 @@
 - [x] Add dynamoDB setup instructions to README
 - [ ] Mock discord.js
 - [ ] Mock twitter
+- [ ] Fix twitchWebhooks
 
 **Future:**
 

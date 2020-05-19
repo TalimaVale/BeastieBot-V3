@@ -1,23 +1,30 @@
-import { readAwesomeness } from "../../../utils";
+import { getTwitchId } from "../../../utils";
 import { BeastieLogger } from "../../../utils/Logging";
 import { CommandModule } from "../index";
 import CommandContext from "../utils/commandContext";
+import { getAwesomeness } from "../../../services/db";
 
 const execute = async (context: CommandContext): Promise<string> => {
-  const user = context.platform === "twitch" ? context.username : context.para1;
-
-  if (user === "") {
+  if (context.platform == "discord" && !context.para1) {
     return `Cannot understand... can you include a username?`;
   }
 
-  let msg: string;
-  try {
-    msg = await readAwesomeness(user, context.displayName);
-  } catch (e) {
-    BeastieLogger.warn(`readAwesomeness ERROR: ${e}`);
-    msg = "Could not fetch awesomeness!";
+  let twitchId: string = context.twitchId;
+  if (context.para1) {
+    twitchId = await getTwitchId(context.para1);
+    if (!twitchId) {
+      return "Invalid twitch username supplied.";
+    }
   }
-  return context.platform === "twitch" ? `@${msg}` : msg;
+
+  let awesomeness: number = await getAwesomeness(twitchId).catch(e => {
+    BeastieLogger.warn(`readAwesomeness ERROR: ${e}`);
+    return 0;
+  });
+
+  return `${context.displayName}, ${
+    !context.para1 ? "you have" : context.para1 + " has"
+  } ${awesomeness} awesomeness`;
 };
 
 const cmdModule = new CommandModule(

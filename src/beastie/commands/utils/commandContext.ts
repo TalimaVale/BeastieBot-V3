@@ -1,5 +1,5 @@
 export default class CommandContext {
-  platform: string;
+  platform: "twitch" | "discord";
   client: any;
 
   message: string;
@@ -9,6 +9,7 @@ export default class CommandContext {
 
   username: string;
   displayName: string;
+  twitchId: string;
   roles: string[];
 
   constructor({
@@ -20,7 +21,19 @@ export default class CommandContext {
     para2 = "",
     username = "teammate",
     displayName = "Teammate",
+    twitchId = "0",
     roles = []
+  }: {
+    platform: "twitch" | "discord";
+    client: object;
+    message: string;
+    command: string;
+    para1: string;
+    para2: string;
+    username: string;
+    displayName: string;
+    twitchId?: string;
+    roles: string[];
   }) {
     this.platform = platform;
     this.client = client;
@@ -30,6 +43,7 @@ export default class CommandContext {
     this.para2 = para2;
     this.username = username;
     this.displayName = displayName;
+    this.twitchId = twitchId;
     this.roles = roles;
   }
 }

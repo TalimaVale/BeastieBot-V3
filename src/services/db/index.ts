@@ -102,7 +102,7 @@ export const getAwesomeness = async (twitchId): Promise<number> => {
     const dbItem: any = await dynamoDB
       .getItem(requestReadAwesomeness(twitchId))
       .promise();
-    return !!dbItem.Item ? dbItem.Item.awesomeness.N : 0;
+    return !!dbItem.Item ? parseInt(dbItem.Item.awesomeness.N, 10) : 0;
   } catch (e) {
     BeastieLogger.warn(`Failed to get user ${twitchId} from db: ${e}`);
   }
