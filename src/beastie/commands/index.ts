@@ -4,6 +4,8 @@ import CommandContext from "./utils/commandContext";
 export class CommandModule {
   name: string;
   aliases: Set<string>;
+  lastUseTime: number = Date.now();
+  rateLimit: number = 10000;
 
   constructor(
     name: string,
@@ -12,10 +14,18 @@ export class CommandModule {
   ) {
     this.name = name;
     this.aliases = aliases;
-    this.execute = payload;
+    this.payload = payload;
   }
 
-  execute: (context: CommandContext) => Promise<string> | Promise<void>;
+  async execute(context: CommandContext): Promise<string | void> {
+    if (this.lastUseTime + this.rateLimit > Date.now()) {
+      return;
+    }
+
+    this.lastUseTime = Date.now();
+    return await this.payload(context);
+  }
+  payload: (context: CommandContext) => Promise<string | void>;
 }
 
 export const commandModules: CommandModule[] = [
