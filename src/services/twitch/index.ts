@@ -2,20 +2,18 @@ import tmi from "tmi.js";
 import twitchOptions from "./twitchOptions";
 import config from "../../config";
 import CommandContext from "../../beastie/commands/utils/commandContext";
-import { determineCommand, CommandModule } from "../../beastie/commands";
-import { checkForRaidMessage } from "../../beastie/raid";
-import { startRaiding } from "../../beastie/raid";
-import { endRaid } from "../../beastie/raid";
+import { CommandModule, determineCommand } from "../../beastie/commands";
+import { checkForRaidMessage, endRaid, startRaiding } from "../../beastie/raid";
 import {
-  beastieConnectMessage,
-  beastieDisconnectMessage,
   awesomenessInterval,
   awesomenessIntervalAmount,
+  beastieConnectMessage,
+  beastieDisconnectMessage,
   discordInterval,
   discordIntervalMessage,
-  raidTimer,
+  POST_EVENT,
   raidMessage,
-  POST_EVENT
+  raidTimer
 } from "../../utils/values";
 import { updateChattersAwesomeness } from "../../utils";
 import twitchPosts from "./twitchPosts";
@@ -38,10 +36,14 @@ export default class BeastieTwitchService {
   awesomenessIntervalAmount: number;
   discordInterval: NodeJS.Timeout;
 
+  messageQueue: string[];
+  messageQueueRate: number = 1000 * 5;
+  messageQueueInterval: NodeJS.Timeout = null;
+
   constructor() {
     // @ts-ignore
     this.client = new tmi.Client(twitchOptions);
-    this.broadcasterUsername = config.BROADCASTER_USERNAME;
+    this.broadcasterUsername = config.BROADCASTER_USERNAME.toLocaleLowerCase();
     this.awesomenessIntervalAmount = awesomenessIntervalAmount;
     this.activeRaid = false;
     this.raidMessage = raidMessage;
@@ -65,6 +67,10 @@ export default class BeastieTwitchService {
     this.client.on("connected", async () => {
       BeastieLogger.info(`Beastie has connected to twitch`);
       await this.onConnect();
+      this.messageQueueInterval = setInterval(
+        this.sayQueue,
+        this.messageQueueRate
+      );
     });
 
     this.client.on("disconnected", async () => {
@@ -78,19 +84,27 @@ export default class BeastieTwitchService {
     await this.onSIGINT();
   }
 
-  // BeastieTwitchClient Actions
-  private say = async msg => {
-    if (Array.isArray(msg)) {
-      for (const m of msg) {
-        await this.say(m);
-      }
-    } else {
+  private sayQueue = async () => {
+    let msg = this.messageQueue.pop();
+    if (msg) {
       try {
         await this.client.say(this.broadcasterUsername, msg);
       } catch (e) {
         BeastieLogger.warn(`Failed to send message: ${e}`);
       }
     }
+  };
+
+  // BeastieTwitchClient Actions
+  private say = async (msg: string | string[]) => {
+    if (!Array.isArray(msg)) {
+      this.messageQueue.push(msg);
+      return;
+    }
+
+    msg.forEach(m => {
+      this.messageQueue.push(m);
+    });
   };
 
   public post = (event, name) => {
@@ -126,10 +140,14 @@ export default class BeastieTwitchService {
 
   private onDisconnect = async () => {
     await this.say(beastieDisconnectMessage);
+    clearInterval(this.messageQueueInterval);
+    this.messageQueueInterval = null;
   };
 
   private onSIGINT = async () => {
     await this.say(beastieDisconnectMessage);
+    clearInterval(this.messageQueueInterval);
+    this.messageQueueInterval = null;
     await this.client.disconnect();
   };
 
