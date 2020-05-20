@@ -158,6 +158,11 @@ export default class BeastieTwitchService {
     await this.client.disconnect();
   };
 
+  private onSIGINT = async () => {
+    await this.say(beastieDisconnectMessage);
+    await this.client.disconnect();
+  };
+
   private onMessage = async (channel, tags, message) => {
     if (!message.startsWith("!")) {
       if (this.activeRaid && this.hostedChannel !== "") {
