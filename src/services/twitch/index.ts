@@ -37,8 +37,8 @@ export default class BeastieTwitchService {
   discordInterval: NodeJS.Timeout;
 
   messageQueue: string[] = [];
-  messageQueueRate: number = 1000 * 5;
-  messageQueueInterval: NodeJS.Timeout = null;
+  messageQueueLimit: number = 1000 * 5;
+  messageQueueTimeout: NodeJS.Timeout = null;
 
   constructor() {
     // @ts-ignore
@@ -67,10 +67,6 @@ export default class BeastieTwitchService {
     this.client.on("connected", async () => {
       BeastieLogger.info(`Beastie has connected to twitch`);
       await this.onConnect();
-      this.messageQueueInterval = setInterval(
-        this.sayQueue,
-        this.messageQueueRate
-      );
     });
 
     this.client.on("disconnected", async () => {
@@ -85,6 +81,11 @@ export default class BeastieTwitchService {
   }
 
   private sayQueue = async () => {
+    if (this.messageQueueTimeout) {
+      return;
+    }
+    this.messageQueueTimeout = null;
+
     let msg = this.messageQueue.pop();
     if (msg) {
       try {
@@ -92,19 +93,25 @@ export default class BeastieTwitchService {
       } catch (e) {
         BeastieLogger.warn(`Failed to send message: ${e}`);
       }
+
+      this.messageQueueTimeout = setTimeout(() => {
+        this.messageQueueTimeout = null;
+        this.sayQueue();
+      }, this.messageQueueLimit);
     }
   };
 
   // BeastieTwitchClient Actions
   private say = async (msg: string | string[]) => {
-    if (!Array.isArray(msg)) {
+    if (Array.isArray(msg)) {
+      msg.forEach(m => {
+        this.messageQueue.push(m);
+      });
+    } else {
       this.messageQueue.push(msg);
-      return;
     }
 
-    msg.forEach(m => {
-      this.messageQueue.push(m);
-    });
+    await this.sayQueue();
   };
 
   public post = (event, name) => {
@@ -140,14 +147,14 @@ export default class BeastieTwitchService {
 
   private onDisconnect = async () => {
     await this.say(beastieDisconnectMessage);
-    clearInterval(this.messageQueueInterval);
-    this.messageQueueInterval = null;
+    clearTimeout(this.messageQueueTimeout);
+    this.messageQueueTimeout = null;
   };
 
   private onSIGINT = async () => {
     await this.say(beastieDisconnectMessage);
-    clearInterval(this.messageQueueInterval);
-    this.messageQueueInterval = null;
+    clearTimeout(this.messageQueueTimeout);
+    this.messageQueueTimeout = null;
     await this.client.disconnect();
   };
 
