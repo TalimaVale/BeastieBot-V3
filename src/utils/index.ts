@@ -120,6 +120,8 @@ async function getTwitchProfiles(usernames: string[]) {
     return false;
   });
 
+  const usernames: string[] = Object.values(chatters).flat();
+
   const arraysOfUsernames = usernames
     .reduce(
       ([_ = [], ...rest], username) =>
