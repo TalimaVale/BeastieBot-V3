@@ -1,8 +1,5 @@
 # BeastieBot V3
 
-- [x] Update README
-- [x] Install dynamoDB locally
-- [x] Add dynamoDB setup instructions to README
 - [x] Message throttling for twitch
 - [x] Improve Awesomeness command
 - [x] Add .gitattributes for line endings
