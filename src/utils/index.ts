@@ -1,9 +1,7 @@
 import rp from "request-promise";
 import config from "../config";
-import { awesomenessInterval } from "./values";
-import dynamoDB from "../services/db";
-import { createTeammateTable } from "../services/db/createTable";
 import { BeastieLogger } from "./Logging";
+import { updateAwesomeness } from "../services/db";
 
 function callTwitchApi(uri, options) {
   options = options || {};
@@ -24,34 +22,63 @@ export const isBroadcaster = name => {
   return name === config.BROADCASTER_USERNAME;
 };
 
-const getUser = async username => {
-  return callTwitchApi("https://api.twitch.tv/helix/users", {
-    qs: { login: username.toLowerCase() }
-  });
+type TwitchProfile = {
+  id: string;
+  login: string;
+  display_name: string;
+  type: string;
+  broadcaster_type: string;
+  description: string;
+  profile_image_url: string;
+  offline_image_url: string;
+  view_count: number;
 };
 
-export const getBroadcasterId = async () => {
-  try {
-    const userArray = await getUser(config.BROADCASTER_USERNAME);
-    return userArray.data[0].id;
-  } catch (e) {
-    BeastieLogger.warn(
-      `Failed to get broadcaster id for ${config.BROADCASTER_USERNAME}: ${e}`
-    );
-    return 0;
+let twitchProfileCache = new Map<string, TwitchProfile>();
+
+function addProfileToCache(
+  username: string,
+  profile: TwitchProfile
+): TwitchProfile {
+  if (twitchProfileCache.has(username)) {
+    return profile;
   }
+  twitchProfileCache.set(username, profile);
+  setTimeout(() => twitchProfileCache.delete(username), 1000 * 60 * 60 * 24);
+  return profile;
+}
+
+const getTwitchProfile = async (username: string): Promise<TwitchProfile> => {
+  if (twitchProfileCache.has(username)) {
+    return twitchProfileCache.get(username);
+  }
+
+  try {
+    const {
+      data: [profile = null]
+    } = await callTwitchApi("https://api.twitch.tv/helix/users", {
+      qs: { login: username.toLowerCase() }
+    });
+    return addProfileToCache(username, profile);
+  } catch (e) {
+    BeastieLogger.warn(`Failed to get twitch user ${username}: ${e}`);
+  }
+
+  return null;
+};
+
+export const getTwitchId = async (username: string): Promise<string> => {
+  let user = await getTwitchProfile(username);
+  return user?.id;
+};
+
+export const getBroadcasterId = async (): Promise<string> => {
+  return getTwitchId(config.BROADCASTER_USERNAME);
 };
 
 export const getBroadcasterDisplayName = async () => {
-  try {
-    const userArray = await getUser(config.BROADCASTER_USERNAME);
-    return userArray.data[0].display_name;
-  } catch (e) {
-    BeastieLogger.warn(
-      `Failed to get broadcaster id for ${config.BROADCASTER_USERNAME}: ${e}`
-    );
-    return 0;
-  }
+  const userArray = await getTwitchProfile(config.BROADCASTER_USERNAME);
+  return userArray?.display_name;
 };
 
 const getBroadcasterStream = async broadcasterID => {
@@ -71,43 +98,7 @@ export const initStream = async () => {
   return { live, id };
 };
 
-const requestAddAwesomeness = (id, username, amount) => ({
-  Key: {
-    twitchUserId: {
-      S: id
-    }
-  },
-  TableName: config.DATABASE_TEAMMATE_TABLE,
-  ExpressionAttributeNames: {
-    "#A": "awesomeness",
-    "#UN": "username",
-    "#WT": "watchTime"
-  },
-  ExpressionAttributeValues: {
-    ":A": {
-      N: `${amount}`
-    },
-    ":UN": {
-      S: username
-    },
-    ":WT": {
-      N: `${awesomenessInterval / 60 / 1000}`
-    }
-  },
-  UpdateExpression: "ADD #A :A, #WT :WT SET #UN = :UN",
-  ReturnValues: "ALL_NEW"
-});
-
-const requestReadAwesomeness = id => ({
-  Key: {
-    twitchUserId: {
-      S: id
-    }
-  },
-  TableName: config.DATABASE_TEAMMATE_TABLE
-});
-
-interface ChattersData {
+type ChattersData = {
   broadcaster?: string[];
   vips?: string[];
   moderators: string[];
@@ -115,23 +106,19 @@ interface ChattersData {
   admins: string[];
   global_mods: string[];
   viewers: string[];
-}
+};
 
-const getChatroomViewers = async (): Promise<string[]> => {
-  let chatters: ChattersData;
-  try {
-    chatters = (
-      await callTwitchApi(
-        `https://tmi.twitch.tv/group/user/${config.BROADCASTER_USERNAME}/chatters`,
-        {}
-      )
-    ).chatters;
-  } catch (e) {
-    BeastieLogger.warn(`Failed to get chatroom viewers: ${e}`);
-    return [];
-  }
+async function getTwitchProfiles(usernames: string[]) {
+  let twitchProfiles: TwitchProfile[] = [];
 
-  const usernames: string[] = Object.values(chatters).flat();
+  usernames = usernames.filter((username: string): boolean => {
+    if (!twitchProfileCache.has(username)) {
+      return true;
+    }
+
+    twitchProfiles.push(twitchProfileCache.get(username));
+    return false;
+  });
 
   const arraysOfUsernames = usernames
     .reduce(
@@ -145,7 +132,6 @@ const getChatroomViewers = async (): Promise<string[]> => {
     usernames => `login=${usernames.join("&login=")}`
   );
 
-  let viewers: string[] = [];
   for (const query of userIdQueryStrings) {
     try {
       const { data: profiles = [] } = await callTwitchApi(
@@ -153,98 +139,52 @@ const getChatroomViewers = async (): Promise<string[]> => {
         {}
       );
 
-      viewers.push(
-        ...profiles.map(({ id, login: username }) => [id, username])
-      );
+      profiles.forEach((profile: TwitchProfile) => {
+        twitchProfiles.push(addProfileToCache(profile.login, profile));
+      });
     } catch (e) {
       BeastieLogger.warn(`Failed to fetch twitch user ${query}`);
     }
   }
+  return twitchProfiles;
+}
 
-  return viewers;
-};
-
-const checkDatabaseTables = async table => {
-  const { TableNames = [] } = await dynamoDB.listTables().promise();
-  return TableNames.includes(table);
-};
-
-const checkTeammateTable = async () => {
-  if (!(await checkDatabaseTables(config.DATABASE_TEAMMATE_TABLE))) {
-    await createTeammateTable(dynamoDB);
-  }
-};
-
-export const readAwesomeness = async (user, displayName) => {
+const getChatroomViewers = async (): Promise<TwitchProfile[]> => {
+  let chatters: ChattersData;
   try {
-    await checkTeammateTable();
+    chatters = (
+      await callTwitchApi(
+        `https://tmi.twitch.tv/group/user/${config.BROADCASTER_USERNAME}/chatters`,
+        {}
+      )
+    ).chatters;
   } catch (e) {
-    BeastieLogger.error(`Failed to check teammate table ${e}`);
-    return;
+    BeastieLogger.warn(`Failed to get chatroom viewers: ${e}`);
+    return [];
   }
 
-  const { data } = await getUser(user);
-
-  if (!data[0]) {
-    return `I cannot find that username...`;
-  }
-
-  const { id, display_name: userDisplayName } = data[0];
-
-  try {
-    const dbItem: any = await dynamoDB
-      .getItem(requestReadAwesomeness(id))
-      .promise();
-    if (!dbItem.Item) {
-      return `I cannot find that teammate...`;
-    }
-
-    const awesomeness = dbItem.Item.awesomeness.N;
-    const userRead =
-      userDisplayName === displayName ? `You have` : `${userDisplayName} has`;
-
-    return `${displayName}, ${userRead} ${awesomeness} awesomeness`;
-  } catch (e) {
-    BeastieLogger.error(`Failed to fetch awesomeness from db: ${e}`);
-    return `Sorry, server error`;
-  }
+  return getTwitchProfiles(Object.values(chatters).flat());
 };
 
 export const updateTeammateAwesomeness = async (user, amount) => {
-  try {
-    await checkTeammateTable();
-  } catch (e) {
-    BeastieLogger.error(`Failed to check teammate table ${e}`);
-    return `Had issue checking the TeammateTable`;
-  }
+  const twitchUser = await getTwitchProfile(user);
 
-  const { data } = await getUser(user);
-
-  if (!data[0]) {
+  if (!twitchUser) {
     return `I cannot find that username...`;
   }
 
-  const { id, login: username, display_name: displayName } = data[0];
-
-  await dynamoDB
-    .updateItem(requestAddAwesomeness(id, username, amount))
-    .promise();
+  if (!(await updateAwesomeness(twitchUser.id, twitchUser.login, amount))) {
+    return `I failed to update the awesomeness :(`;
+  }
 
   BeastieLogger.info(
-    `AWESOMENESS: ${displayName} received ${amount} awesomeness`
+    `AWESOMENESS: ${twitchUser.display_name} received ${amount} awesomeness`
   );
-  return `Awarded ${displayName} ${amount} Awesomeness!`;
+  return `Awarded ${twitchUser.display_name} ${amount} Awesomeness!`;
 };
 
 export const updateChattersAwesomeness = async amount => {
-  try {
-    await checkTeammateTable();
-  } catch (e) {
-    BeastieLogger.error(`Failed to check teammate table ${e}`);
-    return;
-  }
-
-  let viewers: string[];
+  let viewers: TwitchProfile[];
   try {
     viewers = await getChatroomViewers();
   } catch (e) {
@@ -257,16 +197,11 @@ export const updateChattersAwesomeness = async amount => {
     return `Cannot find viewers...`;
   }
 
-  await Promise.all(
-    viewers.map(([id, username]) =>
-      dynamoDB
-        .updateItem(requestAddAwesomeness(id, username, amount))
-        .promise()
-        .catch(e => BeastieLogger.error(`Database error: ${e}`))
+  await Promise.allSettled(
+    viewers.map((profile: TwitchProfile) =>
+      updateAwesomeness(profile.id, profile.login, amount)
     )
-  ).catch(e => {
-    BeastieLogger.warn(`updateChattersAwesomeness updateDB item failed: ${e}`);
-  });
+  );
 
   BeastieLogger.info(
     `AWESOMENESS: ${viewers.length} teammates received ${amount} awesomeness`

@@ -2,20 +2,18 @@ import tmi from "tmi.js";
 import twitchOptions from "./twitchOptions";
 import config from "../../config";
 import CommandContext from "../../beastie/commands/utils/commandContext";
-import determineCommand from "../../beastie/commands";
-import { checkForRaidMessage } from "../../beastie/raid";
-import { startRaiding } from "../../beastie/raid";
-import { endRaid } from "../../beastie/raid";
+import { CommandModule, determineCommand } from "../../beastie/commands";
+import { checkForRaidMessage, endRaid, startRaiding } from "../../beastie/raid";
 import {
-  beastieConnectMessage,
-  beastieDisconnectMessage,
   awesomenessInterval,
   awesomenessIntervalAmount,
+  beastieConnectMessage,
+  beastieDisconnectMessage,
   discordInterval,
   discordIntervalMessage,
-  raidTimer,
+  POST_EVENT,
   raidMessage,
-  POST_EVENT
+  raidTimer
 } from "../../utils/values";
 import { updateChattersAwesomeness } from "../../utils";
 import twitchPosts from "./twitchPosts";
@@ -38,10 +36,14 @@ export default class BeastieTwitchService {
   awesomenessIntervalAmount: number;
   discordInterval: NodeJS.Timeout;
 
+  messageQueue: string[] = [];
+  messageQueueLimit: number = 1000 * 5;
+  messageQueueTimeout: NodeJS.Timeout = null;
+
   constructor() {
     // @ts-ignore
     this.client = new tmi.Client(twitchOptions);
-    this.broadcasterUsername = config.BROADCASTER_USERNAME;
+    this.broadcasterUsername = config.BROADCASTER_USERNAME.toLocaleLowerCase();
     this.awesomenessIntervalAmount = awesomenessIntervalAmount;
     this.activeRaid = false;
     this.raidMessage = raidMessage;
@@ -78,19 +80,38 @@ export default class BeastieTwitchService {
     await this.onSIGINT();
   }
 
-  // BeastieTwitchClient Actions
-  private say = async msg => {
-    if (Array.isArray(msg)) {
-      for (const m of msg) {
-        await this.say(m);
-      }
-    } else {
+  private sayQueue = async () => {
+    if (this.messageQueueTimeout) {
+      return;
+    }
+    this.messageQueueTimeout = null;
+
+    let msg = this.messageQueue.pop();
+    if (msg) {
       try {
         await this.client.say(this.broadcasterUsername, msg);
       } catch (e) {
         BeastieLogger.warn(`Failed to send message: ${e}`);
       }
+
+      this.messageQueueTimeout = setTimeout(() => {
+        this.messageQueueTimeout = null;
+        this.sayQueue();
+      }, this.messageQueueLimit);
     }
+  };
+
+  // BeastieTwitchClient Actions
+  private say = async (msg: string | string[]) => {
+    if (Array.isArray(msg)) {
+      msg.forEach(m => {
+        this.messageQueue.push(m);
+      });
+    } else {
+      this.messageQueue.push(msg);
+    }
+
+    await this.sayQueue();
   };
 
   public post = (event, name) => {
@@ -103,9 +124,10 @@ export default class BeastieTwitchService {
       BeastieLogger.info("Stream intervals running...");
       if (this.awesomenessInterval === undefined)
         this.awesomenessInterval = setInterval(() => {
-          updateChattersAwesomeness(this.awesomenessIntervalAmount).catch(
-            error =>
-              BeastieLogger.error(`updateChattersAwesomeness ERROR ${error}`)
+          updateChattersAwesomeness(
+            this.awesomenessIntervalAmount
+          ).catch(error =>
+            BeastieLogger.error(`updateChattersAwesomeness ERROR ${error}`)
           );
         }, awesomenessInterval);
       if (this.discordInterval === undefined)
@@ -125,6 +147,15 @@ export default class BeastieTwitchService {
 
   private onDisconnect = async () => {
     await this.say(beastieDisconnectMessage);
+    clearTimeout(this.messageQueueTimeout);
+    this.messageQueueTimeout = null;
+  };
+
+  private onSIGINT = async () => {
+    await this.say(beastieDisconnectMessage);
+    clearTimeout(this.messageQueueTimeout);
+    this.messageQueueTimeout = null;
+    await this.client.disconnect();
   };
 
   private onSIGINT = async () => {
@@ -143,24 +174,22 @@ export default class BeastieTwitchService {
     const badges = tags.badges ? Object.keys(tags.badges) : [];
     if (badges.includes("broadcaster")) badges.push("moderator");
 
-    const commandModule = determineCommand(command.slice(1), badges);
+    const commandModule: CommandModule = determineCommand(
+      command.slice(1),
+      badges
+    );
     if (commandModule) {
-      const platform = "twitch";
-      const client = this;
-      const username = tags.username;
-      const displayName = tags["display-name"];
-
       try {
-        const response = await commandModule.execute(
+        const response: string | void = await commandModule.execute(
           new CommandContext({
-            platform,
-            client,
+            platform: "twitch",
+            client: this,
             message,
             command,
             para1,
             para2,
-            username,
-            displayName,
+            username: tags.username,
+            displayName: tags["display-name"],
             roles: badges
           })
         );

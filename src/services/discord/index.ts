@@ -143,7 +143,7 @@ export default class BeastieDiscordClient {
     }
 
     try {
-      const response = await commandModule.execute(
+      const response: string | void = await commandModule.execute(
         new CommandContext({
           platform: "discord",
           client: this.client,

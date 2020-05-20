@@ -7,6 +7,7 @@ import BeastieTwitchClient from "../services/twitch";
 import { POST_EVENT } from "../utils/values";
 import BeastieDiscordClient from "../services/discord";
 import { BeastieLogger } from "../utils/Logging";
+import { checkTeammateTable } from "../services/db";
 
 interface StateType {
   isStreaming: boolean;
@@ -21,11 +22,15 @@ export default class BeastieBot {
   discordClient: BeastieDiscordClient;
   twitterClient: BeastieTwitterClient;
 
-  broadcasterId: number;
+  broadcasterId: string;
 
   private constructor() {}
 
   public static async create() {
+    if (!(await checkTeammateTable())) {
+      throw `Issue checking on database, see log`;
+    }
+
     const beastie = new BeastieBot();
 
     beastie.state = {

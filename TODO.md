@@ -1,10 +1,18 @@
 # BeastieBot V3
 
-- [x] Update README
-- [x] Install dynamoDB locally
-- [x] Add dynamoDB setup instructions to README
+- [x] Message throttling for twitch
+- [x] Improve Awesomeness command
+- [x] Add .gitattributes for line endings
+- [x] Improve SIGINT handling
+- [x] Timeout for beastie commands
 - [ ] Mock discord.js
 - [ ] Mock twitter
+- [ ] Fix twitchWebhooks
+- [ ] Message throttling for discord
+- [ ] Awesomeness command respond with whisper
+- [ ] Beastie alias feature
+- [ ] Add more commands
+- [ ] Refactor command index
 
 **Future:**
 
