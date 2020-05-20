@@ -7,11 +7,11 @@
 - [x] Improve Awesomeness command
 - [x] Add .gitattributes for line endings
 - [x] Improve SIGINT handling
+- [x] Timeout for beastie commands
 - [ ] Mock discord.js
 - [ ] Mock twitter
 - [ ] Fix twitchWebhooks
 - [ ] Message throttling for discord
-- [ ] Timeout for beastie commands
 - [ ] Awesomeness command respond with whisper
 - [ ] Beastie alias feature
 - [ ] Add more commands
