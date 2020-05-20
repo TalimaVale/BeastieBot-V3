@@ -37,7 +37,7 @@ export default class BeastieTwitchService {
   discordInterval: NodeJS.Timeout;
 
   messageQueue: string[] = [];
-  messageQueueLimit: number = 1000 * 5;
+  messageQueueLimit: number = 1000 * 0.2;
   messageQueueTimeout: NodeJS.Timeout = null;
 
   constructor() {
@@ -155,11 +155,6 @@ export default class BeastieTwitchService {
     await this.say(beastieDisconnectMessage);
     clearTimeout(this.messageQueueTimeout);
     this.messageQueueTimeout = null;
-    await this.client.disconnect();
-  };
-
-  private onSIGINT = async () => {
-    await this.say(beastieDisconnectMessage);
     await this.client.disconnect();
   };
 

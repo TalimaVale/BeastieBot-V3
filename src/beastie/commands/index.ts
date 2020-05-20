@@ -5,7 +5,7 @@ export class CommandModule {
   name: string;
   aliases: Set<string>;
   lastUseTime: number = Date.now();
-  rateLimit: number = 10000;
+  rateLimit: number = 0; // TODO
 
   constructor(
     name: string,
