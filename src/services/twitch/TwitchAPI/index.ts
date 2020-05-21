@@ -3,7 +3,7 @@
 // query.
 import { Cache, CacheKeyValPair } from "../../../utils/cache";
 import { TwitchProfile, TwitchStream } from "./apiTypes";
-import { BeastieLogger } from "../../../utils/Logging";
+import { BeastieLogger, tryCatchLog } from "../../../utils/Logging";
 import { helixStreams, helixUsers, tmiChatters } from "./endpoints";
 import config from "../../../config";
 
@@ -46,38 +46,31 @@ let profileCache: Cache<TwitchProfile> = new Cache<TwitchProfile>(
   }
 );
 
-export async function getTwitchProfile(
+export const getTwitchProfile = async (
   username: string
-): Promise<TwitchProfile> {
-  try {
-    return (await profileCache.get(username)) as TwitchProfile;
-  } catch (e) {
-    BeastieLogger.warn(`Failed to get twitch user ${username}: ${e}`);
-  }
-  return null;
-}
+): Promise<TwitchProfile> =>
+  tryCatchLog(
+    async () => (await profileCache.get(username)) as TwitchProfile,
+    BeastieLogger.warn,
+    `Failed to get twitch user ${username}`
+  );
 
-export async function getTwitchProfiles(
+export const getTwitchProfiles = async (
   usernames: string[]
-): Promise<TwitchProfile[]> {
-  try {
-    return (await profileCache.get(usernames)) as TwitchProfile[];
-  } catch (e) {
-    BeastieLogger.warn(`Failed to get twitch user ${usernames}: ${e}`);
-  }
-  return null;
-}
+): Promise<TwitchProfile[]> =>
+  tryCatchLog<TwitchProfile[]>(
+    async () => (await profileCache.get(usernames)) as TwitchProfile[],
+    BeastieLogger.warn,
+    `Failed to get twitch user ${usernames}`
+  );
 
 export const getTwitchChatters = async (
   streamer: string
-): Promise<TwitchProfile[]> => {
-  const chatters = (await tmiChatters(streamer)).chatters;
-  return getTwitchProfiles(Object.values(chatters).flat());
-};
+): Promise<TwitchProfile[]> =>
+  getTwitchProfiles(Object.values(await tmiChatters(streamer)).flat());
 
-export const isBroadcaster = (name: string) => {
-  return name === config.BROADCASTER_USERNAME;
-};
+export const isBroadcaster = (name: string) =>
+  name === config.BROADCASTER_USERNAME;
 
 type Broadcaster = {
   getProfile: () => Promise<TwitchProfile>;
@@ -87,10 +80,10 @@ type Broadcaster = {
 export const broadcaster: Broadcaster = {
   getProfile: async (): Promise<TwitchProfile> =>
     await getTwitchProfile(config.BROADCASTER_USERNAME),
-  getStream: async (): Promise<TwitchStream> => {
-    let streams = await helixStreams(
-      `first=1&user_id=${(await broadcaster.getProfile())?.id}`
-    );
-    return streams[0];
-  }
+  getStream: async (): Promise<TwitchStream> =>
+    (
+      await helixStreams(
+        `first=1&user_id=${(await broadcaster.getProfile())?.id}`
+      )
+    )[0]
 };
