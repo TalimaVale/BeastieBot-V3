@@ -1,8 +1,8 @@
-import { getTwitchId } from "../../../utils";
 import { BeastieLogger } from "../../../utils/Logging";
 import { CommandModule } from "../index";
 import CommandContext from "../utils/commandContext";
 import { getAwesomeness } from "../../../services/db";
+import { broadcaster } from "../../../services/twitch/TwitchAPI";
 
 const execute = async (context: CommandContext): Promise<string> => {
   if (context.platform == "discord" && !context.para1) {
@@ -11,7 +11,7 @@ const execute = async (context: CommandContext): Promise<string> => {
 
   let twitchId: string = context.twitchId;
   if (context.para1) {
-    twitchId = await getTwitchId(context.para1);
+    twitchId = (await broadcaster.getProfile())?.id;
     if (!twitchId) {
       return "Invalid twitch username supplied.";
     }
