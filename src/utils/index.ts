@@ -6,19 +6,22 @@ import {
   getTwitchChatters,
   getTwitchProfile
 } from "../services/twitch/TwitchAPI";
-import { default as fetch, RequestInfo, RequestInit } from "node-fetch";
+import { default as fetch, RequestInfo } from "node-fetch";
 
-export async function PerformHttpRequest<T>(
+export async function PerformGetRequest<T>(
   url: RequestInfo,
-  init?: RequestInit
+  headers: object = {}
 ): Promise<T> {
-  const response = await fetch(url, init);
+  const response = await fetch(url, {
+    method: "GET",
+    headers: headers
+  });
+
   return await response.json();
 }
 
-export const isGuildMaster = name => {
-  return name === config.DISCORD_GUILD_MASTER_USERNAME;
-};
+export const isGuildMaster = name =>
+  name === config.DISCORD_GUILD_MASTER_USERNAME;
 
 export const updateTeammateAwesomeness = async (
   user,

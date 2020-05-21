@@ -11,6 +11,10 @@ export type TwitchProfile = {
   email: string;
 };
 
+export type TwitchUsersReturnData = {
+  data: TwitchProfile[];
+};
+
 export type TwitchChatters = {
   broadcaster: string[];
   vips: string[];
@@ -21,7 +25,7 @@ export type TwitchChatters = {
   viewers: string[];
 };
 
-export type TwitchChattersData = {
+export type TwitchChattersReturnData = {
   links: any;
   chatter_count: number;
   chatters: TwitchChatters;
@@ -41,7 +45,7 @@ export type TwitchStream = {
   tag_ids: string[];
 };
 
-export type TwitchStreams = {
+export type TwitchStreamsReturnData = {
   data: TwitchStream[];
   pagination: any; // idk what this is but twitch includes it in the response (never seen it with any data)
 };

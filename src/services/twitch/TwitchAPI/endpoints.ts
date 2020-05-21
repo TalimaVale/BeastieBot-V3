@@ -1,31 +1,43 @@
-import { TwitchChattersData, TwitchProfile, TwitchStreams } from "./apiTypes";
+import {
+  TwitchChatters,
+  TwitchChattersReturnData,
+  TwitchProfile,
+  TwitchStream,
+  TwitchStreamsReturnData,
+  TwitchUsersReturnData
+} from "./apiTypes";
 import config from "../../../config";
-import { PerformHttpRequest } from "../../../utils";
+import { PerformGetRequest } from "../../../utils";
 
-function callTwitchApi<T>(uri, options = null): Promise<T> {
-  options = options || {};
-  options.headers = {
-    "Client-ID": `${config.CLIENT_ID}`,
-    Authorization: `Bearer ${config.BROADCASTER_OAUTH}`
+function callTwitchApi<T>(uri, headers = {}): Promise<T> {
+  let httpHeaders = {
+    ...{
+      "Content-Type": "application/json",
+      "Client-ID": `${config.CLIENT_ID}`,
+      Authorization: `Bearer ${config.BROADCASTER_OAUTH}`
+    },
+    ...headers
   };
-  options.json = true;
-  return PerformHttpRequest<T>(uri, options);
+  return PerformGetRequest<T>(uri, httpHeaders);
 }
 
-export async function helixUsers(query: string): Promise<TwitchProfile[]> {
-  return callTwitchApi<TwitchProfile[]>(
-    `https://api.twitch.tv/helix/users?${query}`
-  );
-}
+export const helixUsers = async (query: string): Promise<TwitchProfile[]> =>
+  (
+    await callTwitchApi<TwitchUsersReturnData>(
+      `https://api.twitch.tv/helix/users?${query}`
+    )
+  ).data;
 
-export async function helixStreams(query: string): Promise<TwitchStreams> {
-  return callTwitchApi(`https://api.twitch.tv/helix/streams?${query}`);
-}
+export const helixStreams = async (query: string): Promise<TwitchStream[]> =>
+  (
+    await callTwitchApi<TwitchStreamsReturnData>(
+      `https://api.twitch.tv/helix/streams?${query}`
+    )
+  ).data;
 
-export async function tmiChatters(
-  streamer: string
-): Promise<TwitchChattersData> {
-  return callTwitchApi<TwitchChattersData>(
-    `https://tmi.twitch.tv/group/user/${streamer}/chatters`
-  );
-}
+export const tmiChatters = async (streamer: string): Promise<TwitchChatters> =>
+  (
+    await callTwitchApi<TwitchChattersReturnData>(
+      `https://tmi.twitch.tv/group/user/${streamer}/chatters`
+    )
+  ).chatters;
