@@ -9,4 +9,6 @@ const cmdModule = new CommandModule(
   new Set(["aboutus", "aboutteam", "abouttheteam", "aboutteamtalima"]),
   execute
 );
+
+cmdModule.rateLimit = 1000 * 60 * 10;
 export default cmdModule;

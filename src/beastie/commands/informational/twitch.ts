@@ -8,4 +8,5 @@ const execute = async (context: CommandContext): Promise<string> => {
 };
 
 const cmdModule = new CommandModule("twitch", new Set([]), execute);
+cmdModule.rateLimit = 1000 * 60 * 10;
 export default cmdModule;
