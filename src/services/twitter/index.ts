@@ -49,7 +49,7 @@ export default class BeastieTwitterClient {
     );
   };
 
-  public post = async (event, streamId = 0) => {
+  public post = async (event, streamId: string = "0") => {
     const msg = await twitterPosts(event, streamId);
     this.say(msg);
   };

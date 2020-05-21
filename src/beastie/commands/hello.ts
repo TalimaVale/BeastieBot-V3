@@ -1,10 +1,11 @@
 import {
-  beastieFaceTwitchEmotes,
-  beastieFaceDiscordEmotes
+  beastieFaceDiscordEmotes,
+  beastieFaceTwitchEmotes
 } from "../../utils/values";
-import { isBroadcaster, isGuildMaster } from "../../utils";
+import { isGuildMaster } from "../../utils";
 import { CommandModule } from "./index";
 import CommandContext from "./utils/commandContext";
+import { isBroadcaster } from "../../services/twitch/TwitchAPI";
 
 const execute = async (context: CommandContext): Promise<string> => {
   let beastieGreeting = "Hello";

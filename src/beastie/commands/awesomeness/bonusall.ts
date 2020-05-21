@@ -9,7 +9,7 @@ const execute = async (context: CommandContext): Promise<string> => {
   }
 
   try {
-    return updateChattersAwesomeness(context.para1);
+    return updateChattersAwesomeness(parseInt(context.para1, 10));
   } catch (error) {
     BeastieLogger.warn(`updateChattersAwesomeness ERROR: ${error}`);
   }

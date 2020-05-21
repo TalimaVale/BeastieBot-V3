@@ -1,17 +1,18 @@
 import config from "../config";
 import TwitchWebhooksServer from "../services/twitchWebhooks";
 import BeastieTwitterClient from "../services/twitter";
-import { getBroadcasterId, initStream } from "../utils";
 import handleStreamChange from "../services/twitchWebhooks/streamChange";
 import BeastieTwitchClient from "../services/twitch";
 import { POST_EVENT } from "../utils/values";
 import BeastieDiscordClient from "../services/discord";
 import { BeastieLogger } from "../utils/Logging";
 import { checkTeammateTable } from "../services/db";
+import { broadcaster } from "../services/twitch/TwitchAPI";
+import { TwitchStream } from "../services/twitch/TwitchAPI/apiTypes";
 
 interface StateType {
   isStreaming: boolean;
-  curStreamId: number;
+  curStreamId: string;
 }
 
 export default class BeastieBot {
@@ -35,11 +36,11 @@ export default class BeastieBot {
 
     beastie.state = {
       isStreaming: false,
-      curStreamId: 0
+      curStreamId: "0"
     };
 
     beastie.twitchClient = beastie.initTwitch();
-    beastie.broadcasterId = await getBroadcasterId();
+    beastie.broadcasterId = (await broadcaster.getProfile())?.id;
     //beastie.twitchWebhooks = beastie.initTwitchWebhooks();
     beastie.discordClient = beastie.initDiscord();
     beastie.twitterClient = beastie.initTwitter();
@@ -120,13 +121,13 @@ export default class BeastieBot {
   }
 
   initState = async (): Promise<StateType> => {
-    const stream = await initStream();
+    const stream: TwitchStream = await broadcaster.getStream();
 
     BeastieLogger.info("state init finished");
     return {
       ...this.state,
-      isStreaming: stream.live,
-      curStreamId: stream.id
+      isStreaming: stream?.type === "live",
+      curStreamId: stream?.id
     };
   };
 
@@ -141,7 +142,7 @@ export default class BeastieBot {
     const response = handleStreamChange(stream, this.state.curStreamId);
 
     this.state.isStreaming = response.live;
-    this.state.curStreamId = response.streamId;
+    this.state.curStreamId = response.streamId.toString();
 
     if (response.newStream) {
       this.twitterClient

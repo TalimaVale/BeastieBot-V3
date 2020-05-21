@@ -44,4 +44,17 @@ if (process.env.NODE_ENV !== "production") {
   );
 }
 
+export async function tryCatchLog<T>(
+  func: () => Promise<T>,
+  logFunction,
+  outputOnFail
+): Promise<T> {
+  try {
+    return await func();
+  } catch (e) {
+    logFunction(`${outputOnFail}: ${e}`);
+  }
+  return null;
+}
+
 export { beastieLogger as BeastieLogger };

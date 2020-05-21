@@ -37,7 +37,7 @@ export default class BeastieTwitchService {
   discordInterval: NodeJS.Timeout;
 
   messageQueue: string[] = [];
-  messageQueueLimit: number = 1000 * 0.2;
+  messageQueueLimit: number = 1000 * 1.5;
   messageQueueTimeout: NodeJS.Timeout = null;
 
   constructor() {
