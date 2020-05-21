@@ -35,7 +35,8 @@ export const commandModules: CommandModule[] = [
   require("./awesomeness/awesomeness").default,
   require("./informational/about").default,
   require("./informational/discord").default,
-  require("./informational/twitch").default
+  require("./informational/twitch").default,
+  require("./informational/trello").default
 ];
 export const subscriberCommandModules: CommandModule[] = [];
 export const moderatorCommandModules: CommandModule[] = [
