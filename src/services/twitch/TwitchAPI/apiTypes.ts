@@ -47,5 +47,5 @@ export type TwitchStream = {
 
 export type TwitchStreamsReturnData = {
   data: TwitchStream[];
-  pagination: any; // idk what this is but twitch includes it in the response (never seen it with any data)
+  pagination: any; // We don't currently use this but it's an iterator for the streams
 };

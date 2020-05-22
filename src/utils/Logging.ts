@@ -45,12 +45,12 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 export function swallowRejection(
-    errorMessage: string,
-    errorLog: (message: string) => void = BeastieLogger.error
+  errorMessage: string,
+  errorLog: (message: string) => void = beastieLogger.error
 ): (rejection: any) => Promise<null> {
-    return async (error: any) => {
-        await errorLog(`${errorMessage}: ${JSON.stringify(error)}`);
-        return null;
-    };
+  return async (error: any) => {
+    await errorLog(`${errorMessage}: ${JSON.stringify(error)}`);
+    return null;
+  };
 }
 export { beastieLogger as BeastieLogger };
