@@ -2,7 +2,7 @@ import { BeastieLogger } from "../../../utils/Logging";
 import { CommandModule } from "../index";
 import CommandContext from "../utils/commandContext";
 import { getAwesomeness } from "../../../services/db";
-import { broadcaster } from "../../../services/twitch/TwitchAPI";
+import { getTwitchProfile } from "../../../services/twitch/TwitchAPI";
 
 const execute = async (context: CommandContext): Promise<string> => {
   if (context.platform == "discord" && !context.para1) {
