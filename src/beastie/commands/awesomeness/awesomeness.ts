@@ -11,7 +11,7 @@ const execute = async (context: CommandContext): Promise<string> => {
 
   let twitchId: string = context.twitchId;
   if (context.para1) {
-    twitchId = (await broadcaster.getProfile())?.id;
+    twitchId = (await getTwitchProfile(context.para1))?.id;
     if (!twitchId) {
       return "Invalid twitch username supplied.";
     }
