@@ -3,7 +3,7 @@
 // query.
 import { Cache, CacheKeyValPair } from "../../../utils/cache";
 import { TwitchProfile, TwitchStream } from "./apiTypes";
-import { BeastieLogger, tryCatchLog } from "../../../utils/Logging";
+import { BeastieLogger, swallowRejection } from "../../../utils/Logging";
 import { helixStreams, helixUsers, tmiChatters } from "./endpoints";
 import config from "../../../config";
 
@@ -49,20 +49,14 @@ let profileCache: Cache<TwitchProfile> = new Cache<TwitchProfile>(
 export const getTwitchProfile = async (
   username: string
 ): Promise<TwitchProfile> =>
-  tryCatchLog(
-    async () => (await profileCache.get(username)) as TwitchProfile,
-    BeastieLogger.warn,
-    `Failed to get twitch user ${username}`
-  );
+  (profileCache.get(username) as Promise<TwitchProfile>)
+    .catch(swallowRejection(`Failed to get twitch user ${username}`, BeastieLogger.warn));
 
 export const getTwitchProfiles = async (
   usernames: string[]
 ): Promise<TwitchProfile[]> =>
-  tryCatchLog<TwitchProfile[]>(
-    async () => (await profileCache.get(usernames)) as TwitchProfile[],
-    BeastieLogger.warn,
-    `Failed to get twitch user ${usernames}`
-  );
+  (profileCache.get(usernames) as Promise<TwitchProfile[]>)
+    .catch(swallowRejection(`Failed to get twitch user ${usernames}`, BeastieLogger.warn));
 
 export const getTwitchChatters = async (
   streamer: string

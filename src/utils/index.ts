@@ -1,5 +1,5 @@
 import config from "../config";
-import { BeastieLogger, tryCatchLog } from "./Logging";
+import { BeastieLogger, swallowRejection } from "./Logging";
 import { updateAwesomeness } from "../services/db";
 import { TwitchProfile } from "../services/twitch/TwitchAPI/apiTypes";
 import {
@@ -27,11 +27,8 @@ export const updateTeammateAwesomeness = async (
   user,
   amount
 ): Promise<string> => {
-  let profile: TwitchProfile = await tryCatchLog<TwitchProfile>(
-    async () => getTwitchProfile(user),
-    BeastieLogger.warn,
-    `Failed to get twitch profile for ${user}`
-  );
+  let profile: TwitchProfile = await (getTwitchProfile(user) as Promise<TwitchProfile>)
+    .catch(swallowRejection(`Failed to get twitch profile for ${user}`, BeastieLogger.warn));
 
   if (!profile) {
     return `I cannot find that username...`;
@@ -54,11 +51,8 @@ export const updateChattersAwesomeness = async (
     return `I don't think that is a number o.o`;
   }
 
-  let viewers: TwitchProfile[] = await tryCatchLog<TwitchProfile[]>(
-    async () => getTwitchChatters(config.BROADCASTER_USERNAME),
-    BeastieLogger.warn,
-    "Failed to get chatroom viewers"
-  );
+  let viewers: TwitchProfile[] = await (getTwitchChatters(config.BROADCASTER_USERNAME) as Promise<TwitchProfile[]>)
+    .catch(swallowRejection("Failed to get chatroom viewers", BeastieLogger.warn));
   BeastieLogger.debug(`Current viewers: ${viewers}`);
 
   if (!viewers) {
