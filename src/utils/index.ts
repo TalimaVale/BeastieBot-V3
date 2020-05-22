@@ -8,7 +8,7 @@ import {
 } from "../services/twitch/TwitchAPI";
 import { default as fetch, RequestInfo } from "node-fetch";
 
-export async function PerformGetRequest<T>(
+export async function performGetRequest<T>(
   url: RequestInfo,
   headers: object = {}
 ): Promise<T> {
