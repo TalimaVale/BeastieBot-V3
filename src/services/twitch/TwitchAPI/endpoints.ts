@@ -7,7 +7,7 @@ import {
   TwitchUsersReturnData
 } from "./apiTypes";
 import config from "../../../config";
-import { PerformGetRequest } from "../../../utils";
+import { performGetRequest } from "../../../utils";
 
 function callTwitchApi<T>(uri, headers = {}): Promise<T> {
   let httpHeaders = {
