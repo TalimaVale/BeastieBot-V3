@@ -18,7 +18,7 @@ function callTwitchApi<T>(uri, headers = {}): Promise<T> {
     },
     ...headers
   };
-  return PerformGetRequest<T>(uri, httpHeaders);
+  return performGetRequest<T>(uri, httpHeaders);
 }
 
 export const helixUsers = async (query: string): Promise<TwitchProfile[]> =>
