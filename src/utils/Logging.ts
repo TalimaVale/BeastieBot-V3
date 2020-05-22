@@ -44,17 +44,13 @@ if (process.env.NODE_ENV !== "production") {
   );
 }
 
-export async function tryCatchLog<T>(
-  func: () => Promise<T>,
-  logFunction,
-  outputOnFail
-): Promise<T> {
-  try {
-    return await func();
-  } catch (e) {
-    logFunction(`${outputOnFail}: ${e}`);
-  }
-  return null;
+export function swallowRejection(
+    errorMessage: string,
+    errorLog: (message: string) => void = BeastieLogger.error
+): (rejection: any) => Promise<null> {
+    return async (error: any) => {
+        await errorLog(`${errorMessage}: ${JSON.stringify(error)}`);
+        return null;
+    };
 }
-
 export { beastieLogger as BeastieLogger };
