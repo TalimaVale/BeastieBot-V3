@@ -101,7 +101,6 @@ export default class BeastieDiscordClient {
 
   private async onSIGINT() {
     try {
-      await this.say(this.discordTalimasFeedChId, beastieDisconnectMessage);
       await this.client.destroy();
     } catch (e) {
       BeastieLogger.warn(`Failed to send shutdown message because ${e}`);
