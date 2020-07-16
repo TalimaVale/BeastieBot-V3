@@ -3,10 +3,10 @@ import CommandContext from "../utils/commandContext";
 
 const execute = async (context: CommandContext): Promise<string> => {
   return context.platform === "twitch"
-    ? `Join the Team Discord Guild! ⠀⠀⠀ => https://discord.gg/eZtrhh7`
+    ? `Join the Team Discord Guild! => https://discord.gg/eZtrhh7`
     : `Join the Team Discord Guild!\n=> https://discord.gg/eZtrhh7`;
 };
 
 const cmdModule = new CommandModule("discord", new Set([]), execute);
-cmdModule.rateLimit = 1000 * 60 * 10;
+cmdModule.rateLimit = 1000 * 60;
 export default cmdModule;
