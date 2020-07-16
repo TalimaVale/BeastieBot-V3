@@ -211,6 +211,7 @@ export default class BeastieTwitchService {
             parameters,
             username: tags.username,
             displayName: tags["display-name"],
+            twitchId: tags["user-id"],
             roles: badges
           })
         );
