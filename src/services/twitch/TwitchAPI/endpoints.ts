@@ -4,12 +4,13 @@ import {
   TwitchProfile,
   TwitchStream,
   TwitchStreamsReturnData,
-  TwitchUsersReturnData
+  TwitchUsersReturnData,
+  TwitchErrorResponse
 } from "./apiTypes";
 import config from "../../../config";
 import { performGetRequest } from "../../../utils";
 
-function callTwitchApi<T>(uri, headers = {}): Promise<T> {
+async function callTwitchApi<T>(uri, headers = {}): Promise<T> {
   let httpHeaders = {
     ...{
       "Content-Type": "application/json",
@@ -18,15 +19,21 @@ function callTwitchApi<T>(uri, headers = {}): Promise<T> {
     },
     ...headers
   };
-  return performGetRequest<T>(uri, httpHeaders);
+  const response = await performGetRequest<T | TwitchErrorResponse>(
+    uri,
+    httpHeaders
+  );
+  if (typeof (response as TwitchErrorResponse).error == "string")
+    return Promise.reject(response as TwitchErrorResponse);
+  else return response as T;
 }
 
-export const helixUsers = async (query: string): Promise<TwitchProfile[]> =>
-  (
-    await callTwitchApi<TwitchUsersReturnData>(
-      `https://api.twitch.tv/helix/users?${query}`
-    )
-  ).data;
+export const helixUsers = async (query: string): Promise<TwitchProfile[]> => {
+  const response = await callTwitchApi<TwitchUsersReturnData>(
+    `https://api.twitch.tv/helix/users?${query}`
+  );
+  return response.data;
+};
 
 export const helixStreams = async (query: string): Promise<TwitchStream[]> =>
   (

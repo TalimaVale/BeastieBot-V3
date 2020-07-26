@@ -1,3 +1,9 @@
+export type TwitchErrorResponse = {
+  error: string;
+  status: number;
+  message: string;
+};
+
 export type TwitchProfile = {
   id: string;
   login: string;

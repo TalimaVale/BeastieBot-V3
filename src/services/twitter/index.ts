@@ -4,14 +4,22 @@ import twitterPosts from "./twitterPosts";
 import { BeastieLogger } from "../../utils/Logging";
 
 export default class BeastieTwitterClient {
-  client: Twitter;
+  client: Twitter | null;
+  enabled: boolean;
 
   constructor() {
-    this.client = new Twitter(twitterOptions);
+    const twitterClientEnabled = twitterOptions.access_token_key !== "";
+    this.enabled = twitterClientEnabled;
+
+    if (twitterClientEnabled) {
+      this.client = new Twitter(twitterOptions);
+    } else {
+      this.client = null;
+    }
   }
 
   public async destroy() {
-    delete this.client;
+    if (this.enabled) delete this.client;
   }
 
   private say = msg => {

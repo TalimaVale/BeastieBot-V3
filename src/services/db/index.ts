@@ -4,13 +4,17 @@ import { awesomenessInterval } from "../../utils/values";
 import { BeastieLogger } from "../../utils/Logging";
 import DynamoDB from "aws-sdk/clients/dynamodb";
 
-AWS.config.update({
-  region: "us-west-2",
-  // @ts-ignore
-  endpoint: config.AWS_ENDPOINT
-});
+export const dynamoDisabled = config.AWS_ENDPOINT === "disabled";
 
-const dynamoDB = new AWS.DynamoDB();
+if (!dynamoDisabled) {
+  AWS.config.update({
+    region: "us-west-2",
+    // @ts-ignore
+    endpoint: config.AWS_ENDPOINT
+  });
+}
+
+const dynamoDB = dynamoDisabled ? null : new AWS.DynamoDB();
 
 const createTeammateTable = async (db: DynamoDB) => {
   const tableParams = {
@@ -30,7 +34,7 @@ const createTeammateTable = async (db: DynamoDB) => {
   );
 
   try {
-    const data = await db.createTable(tableParams).promise();
+    const data = await db?.createTable(tableParams).promise();
     BeastieLogger.warn("Created table!", data);
   } catch (error) {
     BeastieLogger.error("Problem creating table ...", error);
@@ -78,11 +82,13 @@ const requestReadAwesomeness = id => ({
 });
 
 const checkDatabaseTables = async table => {
-  const { TableNames = [] } = await dynamoDB.listTables().promise();
+  const { TableNames = [] } = await dynamoDB?.listTables().promise();
   return TableNames.includes(table);
 };
 
 export const checkTeammateTable = async (): Promise<boolean> => {
+  if (dynamoDisabled) return true;
+
   try {
     if (!(await checkDatabaseTables(config.DATABASE_TEAMMATE_TABLE))) {
       await createTeammateTable(dynamoDB);
@@ -100,7 +106,7 @@ export const checkTeammateTable = async (): Promise<boolean> => {
 export const getAwesomeness = async (twitchId): Promise<number> => {
   try {
     const dbItem: any = await dynamoDB
-      .getItem(requestReadAwesomeness(twitchId))
+      ?.getItem(requestReadAwesomeness(twitchId))
       .promise();
     return !!dbItem.Item ? parseInt(dbItem.Item.awesomeness.N, 10) : 0;
   } catch (e) {
@@ -117,7 +123,7 @@ export const updateAwesomeness = async (
 ): Promise<boolean> => {
   try {
     await dynamoDB
-      .updateItem(requestAddAwesomeness(id, username, amount))
+      ?.updateItem(requestAddAwesomeness(id, username, amount))
       .promise();
     return true;
   } catch (e) {

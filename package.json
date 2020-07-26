@@ -1,18 +1,26 @@
 {
   "version": "0.0.1",
+  "license": "UNLICENSED",
+  "author": {
+    "name": "Talima Vale",
+    "url": "https://twitch.tv/teamTALIMA",
+    "email": "business.teamtalima@gmail.com"
+  },
+  "homepage": "https://discord.com/invite/eZtrhh7",
   "husky": {
     "hooks": {
       "pre-commit": "pretty-quick --staged"
     }
   },
   "scripts": {
-    "start": "yarn serve",
-    "build": "yarn build-ts",
-    "serve": "node dist/index.js",
-    "watch-node": "nodemon --inspect dist/index.js",
-    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn watch-ts\" \"yarn watch-node\"",
-    "build-ts": "tsc",
-    "watch-ts": "tsc -w"
+    "dev": "yarn watch",
+    "build": "tsc",
+    "build:watch": "tsc -w",
+    "start": "node dist/index.js",
+    "start:watch": "nodemon --inspect dist/index.js",
+    "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"yarn build:watch\" \"yarn start:watch\"",
+    "build-and-start": "yarn build && yarn start",
+    "clean": "rimraf dist/ node_modules/"
   },
   "dependencies": {
     "aws-sdk": "^2.678.0",
@@ -23,8 +31,8 @@
     "tmi.js": "^1.5.0",
     "twitch-webhook": "^1.2.4",
     "twitter": "^1.7.1",
-    "yup": "^0.27.0",
-    "winston": "^3.2.1"
+    "winston": "^3.2.1",
+    "yup": "^0.27.0"
   },
   "devDependencies": {
     "@types/dotenv": "^6.1.1",
@@ -38,6 +46,7 @@
     "prettier": "^1.17.1",
     "pretty-quick": "^1.11.0",
     "ramda": "^0.26.1",
+    "rimraf": "^3.0.2",
     "typescript": "^3.9.2",
     "yarn": "^1.22.4"
   }

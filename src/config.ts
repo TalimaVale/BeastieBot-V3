@@ -42,15 +42,15 @@ const config = yup.object().shape({
   DISCORD_CLIENT_ID: yup.string().required(),
   DISCORD_CLIENT_SECRET: yup.string().required(),
   DISCORD_TOKEN: yup.string().required(),
-  TWITTER_CONSUMER_KEY: yup.string().required(),
-  TWITTER_CONSUMER_SECRET: yup.string().required(),
-  TWITTER_ACCESS_TOKEN_KEY: yup.string().required(),
-  TWITTER_ACCESS_TOKEN_SECRET: yup.string().required(),
+  TWITTER_CONSUMER_KEY: yup.string(),
+  TWITTER_CONSUMER_SECRET: yup.string(),
+  TWITTER_ACCESS_TOKEN_KEY: yup.string(),
+  TWITTER_ACCESS_TOKEN_SECRET: yup.string(),
   LOG_LEVEL: yup.string().required(),
   DISCORD_GUILD_NAME: yup.string().required(),
   DISCORD_WELCOME_CHANNEL: yup.string().required(),
   DISCORD_FEED_CHANNEL: yup.string().required(),
-  AWS_ENDPOINT: yup.string().required()
+  AWS_ENDPOINT: yup.string()
 });
 
 export default <Config>config.validateSync(process.env, { stripUnknown: true });

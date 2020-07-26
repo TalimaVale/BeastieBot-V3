@@ -9,6 +9,7 @@ import { BeastieLogger } from "../../utils/Logging";
 export default class BeastieDiscordClient {
   client: Discord.Client;
 
+  homeGuild: Discord.Guild;
   discordGuildId: string;
 
   discordWelcomeChId: string;
@@ -109,10 +110,12 @@ export default class BeastieDiscordClient {
   private async onReady() {
     try {
       const response = handleDiscordReady(this.client);
+      this.homeGuild = response.guild;
 
       this.discordGuildId = response.discordGuildId;
       this.discordWelcomeChId = response.discordWelcomeChId;
       this.discordTalimasFeedChId = response.discordTalimasFeedChId;
+
       try {
         await this.say(this.discordWelcomeChId, "rawr");
       } catch (e) {
@@ -129,8 +132,10 @@ export default class BeastieDiscordClient {
     if (!message.content.startsWith("!")) return;
 
     const [command = "!", para1 = "", para2 = ""] = message.content.split(" ");
-    const guild = this.client.guilds.cache.get(message.guild.id);
-    const guildMember: GuildMember = guild.members.cache.get(message.author.id);
+    const guild = this.homeGuild;
+    const guildMember = guild.members.cache.find(
+      member => member.user.id === message.author.id
+    );
     const roles = guildMember.roles.cache.map(role => role.name);
 
     const commandModule = determineCommand(

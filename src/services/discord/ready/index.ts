@@ -21,5 +21,5 @@ export const handleDiscordReady = discordClient => {
     ch => ch.name === config.DISCORD_FEED_CHANNEL
   ).id;
 
-  return { discordGuildId, discordWelcomeChId, discordTalimasFeedChId };
+  return { guild, discordGuildId, discordWelcomeChId, discordTalimasFeedChId };
 };
