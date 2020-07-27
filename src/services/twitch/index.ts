@@ -18,6 +18,7 @@ import {
 import { updateChattersAwesomeness } from "../../utils";
 import twitchPosts from "./twitchPosts";
 import { BeastieLogger } from "../../utils/Logging";
+import { getParameters } from "../../utils/getParameters";
 
 export default class BeastieTwitchService {
   client: tmi.Client;
@@ -142,6 +143,7 @@ export default class BeastieTwitchService {
 
   // Event Handlers
   private onConnect = async () => {
+    await this.client.join(this.broadcasterUsername);
     await this.say(beastieConnectMessage);
   };
 
@@ -165,7 +167,10 @@ export default class BeastieTwitchService {
       }
       return;
     }
-    const [command = "!", para1 = "", para2 = ""] = message.split(" ");
+    // const [command = "!", para1 = "", para2 = ""] = message.split(" ");
+    const [command, ...parameters] = getParameters(message);
+    const [para1, para2] = parameters;
+
     const badges = tags.badges ? Object.keys(tags.badges) : [];
     if (badges.includes("broadcaster")) badges.push("moderator");
 
@@ -183,6 +188,7 @@ export default class BeastieTwitchService {
             command,
             para1,
             para2,
+            parameters,
             username: tags.username,
             displayName: tags["display-name"],
             roles: badges

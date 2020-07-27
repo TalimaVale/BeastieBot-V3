@@ -20,7 +20,9 @@ const execute = async (context: CommandContext): Promise<string> => {
     return `You only have ${maxPages} pages of help`;
   }
 
-  let commandList = Array.from(cmds, (cmd: CommandModule) => cmd.name)
+  let commandList = Array.from(cmds)
+    .filter((cmd: CommandModule) => cmd.helpPresence(context))
+    .map((cmd: CommandModule) => cmd.name)
     .slice(startIndex, startIndex + maxCommandsPerPage)
     .join(", ");
   let output = `Commands: ${commandList} - page ${page + 1}/${maxPages}`;

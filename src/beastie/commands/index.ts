@@ -7,14 +7,18 @@ export class CommandModule {
   lastUseTime: number = Date.now();
   rateLimit: number = 0; // TODO
 
+  helpPresence: (context: CommandContext) => boolean;
+
   constructor(
     name: string,
     aliases: Set<string>,
-    payload: (context: CommandContext) => Promise<string> | Promise<void>
+    payload: (context: CommandContext) => Promise<string> | Promise<void>,
+    helpPresence: (context: CommandContext) => boolean = () => true
   ) {
     this.name = name;
     this.aliases = aliases;
     this.payload = payload;
+    this.helpPresence = helpPresence;
   }
 
   async execute(context: CommandContext): Promise<string | void> {
@@ -36,7 +40,8 @@ export const commandModules: CommandModule[] = [
   require("./informational/about").default,
   require("./informational/discord").default,
   require("./informational/twitch").default,
-  require("./informational/trello").default
+  require("./informational/trello").default,
+  require("./discord-vanity-roles/discord-vanity-roles").default
 ];
 export const subscriberCommandModules: CommandModule[] = [];
 export const moderatorCommandModules: CommandModule[] = [

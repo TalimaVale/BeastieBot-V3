@@ -5,6 +5,7 @@ import { handleDiscordReady } from "./ready";
 import discordPosts from "./discordPosts";
 import { POST_EVENT, beastieDisconnectMessage } from "../../utils/values";
 import { BeastieLogger } from "../../utils/Logging";
+import { getParameters } from "../../utils/getParameters";
 
 export default class BeastieDiscordClient {
   client: Discord.Client;
@@ -131,11 +132,18 @@ export default class BeastieDiscordClient {
   private onMessage = async (message: Message) => {
     if (!message.content.startsWith("!")) return;
 
-    const [command = "!", para1 = "", para2 = ""] = message.content.split(" ");
+    // const [command = "!", para1 = "", para2 = ""] = message.content.split(" ");
+    const [command, ...parameters] = getParameters(message.content);
+    const [para1, para2] = parameters;
+
     const guild = this.homeGuild;
     const guildMember = guild.members.cache.find(
       member => member.user.id === message.author.id
     );
+
+    // not a particpant in the discord guild, don't bother parsing command:
+    if (!guildMember) return;
+
     const roles = guildMember.roles.cache.map(role => role.name);
 
     const commandModule = determineCommand(
@@ -143,6 +151,10 @@ export default class BeastieDiscordClient {
       roles,
       guildMember.user.id
     );
+
+    /*
+      !tags -``
+    */
     if (!commandModule) {
       return;
     }
@@ -151,11 +163,14 @@ export default class BeastieDiscordClient {
       const response: string | void = await commandModule.execute(
         new CommandContext({
           platform: "discord",
+          whisper: message.channel.type === "dm",
+          meta: { message, member: guildMember },
           client: this.client,
           message: message.content,
           command,
           para1,
           para2,
+          parameters,
           username: message.author.username + message.author.discriminator,
           displayName: message.author.username,
           roles
