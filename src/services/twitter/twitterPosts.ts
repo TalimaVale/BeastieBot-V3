@@ -3,7 +3,7 @@ import { broadcaster } from "../twitch/TwitchAPI";
 
 const twitterPosts = async (event, streamId: string) => {
   switch (event) {
-    case POST_EVENT.LIVE:
+    case POST_EVENT.TWITTER_LIVE:
       const broadcasterDisplayName = (await broadcaster.getProfile())
         ?.display_name;
       if (!broadcasterDisplayName) {
@@ -16,7 +16,7 @@ const twitterPosts = async (event, streamId: string) => {
 };
 
 const postLive = (broadcaster: string, streamId: string) => {
-  return `BeastieBot is rawring because we are LIVE! RAWR https://www.twitch.tv/${broadcaster}#stream-${streamId} #${broadcaster} #GameDev #WebDev`;
+  return `We are LIVE! twitch.tv/${broadcaster}#stream-${streamId} RAWR #GameDev #UnrealEngine #ProceduralGeneration #bot`;
 };
 
 /*const postFollows5 = () => {

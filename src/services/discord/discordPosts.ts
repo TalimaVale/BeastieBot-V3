@@ -5,7 +5,7 @@ const discordPosts = async (event, memberUser = "") => {
   switch (event) {
     case POST_EVENT.DISCORD_MEMBER_ADD:
       return postGuildMemberAdd(memberUser);
-    case POST_EVENT.LIVE:
+    case POST_EVENT.DISCORD_LIVE:
       const broadcasterDisplayName = (await broadcaster.getProfile())
         ?.display_name;
       if (!broadcasterDisplayName) {
@@ -22,7 +22,7 @@ const postGuildMemberAdd = member => {
 };
 
 const postLive = broadcaster => {
-  return `BeastieBot is rawring because we are LIVE! RAWR https://www.twitch.tv/${broadcaster}`;
+  return `@here BeastieBot is rawring because we are LIVE! https://www.twitch.tv/${broadcaster} <:teamta1RAWR:704871701992702013>`;
 };
 
 /*const postFollows5 = () => {

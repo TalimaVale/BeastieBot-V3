@@ -62,7 +62,11 @@ export const updateChattersAwesomeness = async (
   ) as Promise<TwitchProfile[]>).catch(
     swallowRejection("Failed to get chatroom viewers", BeastieLogger.warn)
   );
-  BeastieLogger.debug(`Current viewers: ${JSON.stringify(viewers)}`);
+  BeastieLogger.debug(
+    `Current viewers: ${JSON.stringify(
+      viewers.map(profile => `${profile.display_name}, `)
+    )}`
+  );
 
   if (!viewers) {
     return `Cannot find viewers...`;

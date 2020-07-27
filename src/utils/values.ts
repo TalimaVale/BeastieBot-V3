@@ -63,8 +63,9 @@ export const beastieDisconnectMessage = `Goodbye team :) rawr`;
 
 // Social Post Events
 export enum POST_EVENT {
-  "LIVE",
   "NONE",
+  "TWITTER_LIVE",
+  "DISCORD_LIVE",
   "DISCORD_MEMBER_ADD",
   "TWITCH_NEW_SUB",
   "TWITCH_NEW_FOLLOW",

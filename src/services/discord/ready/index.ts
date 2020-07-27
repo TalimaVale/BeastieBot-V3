@@ -16,10 +16,21 @@ export const handleDiscordReady = discordClient => {
     ch => ch.name === config.DISCORD_WELCOME_CHANNEL
   ).id;
 
+  // get stream-announcments channel
+  const discordStreamAnnouncementsChId = guild.channels.cache.find(
+    ch => ch.name === config.DISCORD_STREAM_ANNOUNCEMENTS_CHANNEL
+  ).id;
+
   // get talimas-feed channel
   const discordTalimasFeedChId = guild.channels.cache.find(
     ch => ch.name === config.DISCORD_FEED_CHANNEL
   ).id;
 
-  return { guild, discordGuildId, discordWelcomeChId, discordTalimasFeedChId };
+  return {
+    guild,
+    discordGuildId,
+    discordWelcomeChId,
+    discordStreamAnnouncementsChId,
+    discordTalimasFeedChId
+  };
 };

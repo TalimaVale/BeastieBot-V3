@@ -20,7 +20,7 @@ const postNewTwitchSub = name => {
 };
 
 const postNewTwitchFollow = name => {
-  return `Welcome to the team ${name}! Awesome to have you join us! :D`;
+  return `Welcome to the team ${name}! Awesome to have you join us! teamta1RAWR #BeastieBot`;
 };
 
 const postHosting = name => {

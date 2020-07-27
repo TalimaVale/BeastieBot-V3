@@ -39,6 +39,8 @@ export const commandModules: CommandModule[] = [
   require("./awesomeness/awesomeness").default,
   require("./informational/about").default,
   require("./informational/discord").default,
+  require("./informational/patreon").default,
+  require("./informational/subscribe").default,
   require("./informational/twitch").default,
   require("./informational/trello").default,
   require("./discord-vanity-roles/discord-vanity-roles").default

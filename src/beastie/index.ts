@@ -146,15 +146,15 @@ export default class BeastieBot {
 
     if (response.newStream) {
       this.twitterClient
-        .post(POST_EVENT.LIVE, this.state.curStreamId)
+        .post(POST_EVENT.TWITTER_LIVE, this.state.curStreamId)
         .catch(reason => {
           BeastieLogger.warn(
-            `Failed to complete twitter POST_EVENT.LIVE: ${reason}`
+            `Failed to complete twitter POST_EVENT.TWITTER_LIVE: ${reason}`
           );
         });
-      this.discordClient.post(POST_EVENT.LIVE).catch(reason => {
+      this.discordClient.post(POST_EVENT.DISCORD_LIVE).catch(reason => {
         BeastieLogger.warn(
-          `Failed to complete discord POST_EVENT.LIVE: ${reason}`
+          `Failed to complete discord POST_EVENT.DISCORD_LIVE: ${reason}`
         );
       });
     } else if (!this.state.isStreaming) {

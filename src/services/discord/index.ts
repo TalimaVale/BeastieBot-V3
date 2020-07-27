@@ -15,6 +15,7 @@ export default class BeastieDiscordClient {
 
   discordWelcomeChId: string;
   discordTalimasFeedChId: string;
+  discordStreamAnnouncementsChId: string;
 
   constructor() {
     this.client = new Discord.Client();
@@ -83,10 +84,10 @@ export default class BeastieDiscordClient {
   private discordChannels = event => {
     // TODO: Add handling for different channels?
     switch (event) {
-      case POST_EVENT.LIVE:
-        return this.discordTalimasFeedChId;
+      case POST_EVENT.DISCORD_LIVE:
+        return this.discordStreamAnnouncementsChId;
       default:
-        return this.discordTalimasFeedChId;
+        return this.discordWelcomeChId;
     }
   };
 
@@ -114,6 +115,8 @@ export default class BeastieDiscordClient {
 
       this.discordGuildId = response.discordGuildId;
       this.discordWelcomeChId = response.discordWelcomeChId;
+      this.discordStreamAnnouncementsChId =
+        response.discordStreamAnnouncementsChId;
       this.discordTalimasFeedChId = response.discordTalimasFeedChId;
 
       try {

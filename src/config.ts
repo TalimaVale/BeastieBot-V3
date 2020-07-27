@@ -21,6 +21,7 @@ interface Config {
   LOG_LEVEL: string;
   DISCORD_GUILD_NAME: string;
   DISCORD_WELCOME_CHANNEL: string;
+  DISCORD_STREAM_ANNOUNCEMENTS_CHANNEL: string;
   DISCORD_FEED_CHANNEL: string;
   AWS_ENDPOINT: string;
 }
@@ -49,6 +50,7 @@ const config = yup.object().shape({
   LOG_LEVEL: yup.string().required(),
   DISCORD_GUILD_NAME: yup.string().required(),
   DISCORD_WELCOME_CHANNEL: yup.string().required(),
+  DISCORD_STREAM_ANNOUNCEMENTS_CHANNEL: yup.string().required(),
   DISCORD_FEED_CHANNEL: yup.string().required(),
   AWS_ENDPOINT: yup.string()
 });
