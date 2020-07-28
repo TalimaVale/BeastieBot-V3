@@ -41,7 +41,7 @@ export default class BeastieDiscordClient {
   }
 
   public async destroy() {
-    BeastieLogger.info("SHUTTING DOWN ON SIGINT");
+    BeastieLogger.info("SHUTTING DOWN DISCORD ON SIGINT");
     await this.onSIGINT();
   }
 

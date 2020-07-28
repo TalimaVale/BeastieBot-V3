@@ -83,7 +83,7 @@ export default class BeastieTwitchService {
   }
 
   public async destroy() {
-    BeastieLogger.info("SHUTTING DOWN ON SIGINT");
+    BeastieLogger.info("SHUTTING DOWN TWITCH ON SIGINT");
     await this.onSIGINT();
   }
 
@@ -168,7 +168,6 @@ export default class BeastieTwitchService {
   };
 
   private onDisconnect = async () => {
-    await this.say(beastieDisconnectMessage);
     clearTimeout(this.messageQueueTimeout);
     this.messageQueueTimeout = null;
   };

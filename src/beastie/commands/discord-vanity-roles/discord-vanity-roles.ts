@@ -2,6 +2,11 @@ import { CommandModule } from "..";
 import CommandContext from "../utils/commandContext";
 import { Message, GuildMember } from "discord.js";
 
+// TODO: Providing a tag role name that Beastie is "below" in rank in the guild, yields no response/action
+// TODO: Add commands !addtag and !removetag
+// TODO: Update Beasite strings, all strings one file and personalized
+// TODO: Beastie needs a proper Readme, and easy "how to use" instructions for teammates (commands, text channel, document)
+
 const execute = async (context: CommandContext): Promise<string> => {
   if (context.platform !== "discord") {
     return `${context.displayName}, the !tags command can only be used in a Direct Message on Discord.`;
@@ -50,7 +55,7 @@ const execute = async (context: CommandContext): Promise<string> => {
         if (role === undefined) {
           return `${
             message.author
-          } Sorry, \`${roleName}\` is not a tag I can do anything with. Perhaps you mispelled it?\n\nMaybe you meant one of these:\n\`\`\`\n${tagRoles
+          } Sorry, \`${roleName}\` is not a tag I can edit.\n\nHow about one of these:\n\`\`\`\n${tagRoles
             .filter(role => {
               switch (change) {
                 case "add":
@@ -64,6 +69,7 @@ const execute = async (context: CommandContext): Promise<string> => {
                 SPECIAL_PREFIX.length
               )}"`;
             })
+            .sort()
             .join("\n")}\`\`\``;
         }
         break;
@@ -94,6 +100,7 @@ const execute = async (context: CommandContext): Promise<string> => {
               SPECIAL_PREFIX.length
             )}"`;
           })
+          .sort()
           .join("\n")}\`\`\``;
       default: {
         return `${message.author} Malformed command syntax. Correct usage: \`!tags add "Tag To Remove"\`, \`!tags remove "Tag To Remove"\` or \`!tags\`.`;
